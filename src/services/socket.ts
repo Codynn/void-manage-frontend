@@ -4,7 +4,7 @@ let socket: ReturnType<typeof io> | null = null;
 
 export const connectSocket = (token: string) => {
   if (!socket) {
-    socket = io("http://localhost:8000", { // replace with your backend URL
+    socket = io("https://manage-api.voidnepal.com.np/api", { // replace with your backend URL
       transports: ["websocket"],
     });
 

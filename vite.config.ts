@@ -12,8 +12,9 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ["localhost", "manage.voidnepal.com.np"],
-  },
+  host: true,
+  allowedHosts: "all",
+},
   server: {
     allowedHosts: ["localhost", "manage.voidnepal.com.np"],
   },

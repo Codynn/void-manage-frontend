@@ -24,4 +24,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
 
-CMD ["npx", "vite", "preview", "--port", "3000"]
+CMD ["npx", "vite", "preview", "--port", "3000", "--host"]

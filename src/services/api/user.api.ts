@@ -59,8 +59,11 @@ export const useCreateUser = () => {
       username: string;
       password: string;
       role: string;
+      department?: string;
+      designation?: string;
+      displayOrder?: number;
     }) => {
-      const response = await API.post("/users/register", userData);
+      const response = await API.post("/users/createuser", userData);
       return response.data;
     },
     onSuccess: () => {
@@ -69,7 +72,29 @@ export const useCreateUser = () => {
     },
   });
 };
+export const useCreateIntern = () => {
+  const queryClient = useQueryClient();
 
+  return useMutation({
+    mutationFn: async (userData: {
+      email: string;
+      username: string;
+      password: string;
+      role: string;
+      department?: string;
+      designation?: string;
+      displayOrder?: number;
+    }) => {
+      // Hits the backend endpoint that sets adminId automatically
+      const response = await API.post("/users/createintern", userData);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch users list so new intern shows up
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};
 export const useAssignMentor = () => {
   return useMutation({
     mutationFn: async ({

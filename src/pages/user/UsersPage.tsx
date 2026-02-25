@@ -12,7 +12,7 @@ import type { IUserData } from "@/types/user.type";
 
 const USERS_PER_PAGE = 9;
 
-const UsersPage = () => {
+const                UsersPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 

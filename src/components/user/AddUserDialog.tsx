@@ -30,7 +30,7 @@ const AddUserDialog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     if (!formData.email || !formData.username || !formData.role) {
       setError("Please fill in all required fields");
       return;
@@ -78,7 +78,7 @@ const AddUserDialog = () => {
               {error}
             </div>
           )}
-          
+
           <div className="space-y-2">
             <Label htmlFor="username">Username *</Label>
             <Input
@@ -90,7 +90,7 @@ const AddUserDialog = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email *</Label>
             <Input

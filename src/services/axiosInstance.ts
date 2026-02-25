@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_BASEURL || "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_BASEURL || "https://manage-api.voidnepal.com.np/api",
 });
 
 API.interceptors.request.use(

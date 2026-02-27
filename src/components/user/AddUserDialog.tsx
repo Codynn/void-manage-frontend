@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, LoaderCircle } from "lucide-react";
+import { Plus, LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useCreateUser } from "@/services/api/user.api";
 
 const AddUserDialog = () => {
   const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
@@ -103,15 +104,28 @@ const AddUserDialog = () => {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Default: abc1"
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
+              className="pr-10"
             />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-[34px] text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
             <p className="text-xs text-muted-foreground">
               Default password is "abc1". User can change it after first login.
             </p>

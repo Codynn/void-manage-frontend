@@ -3,13 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { TLoginForm } from "@/types/index.type";
 import { useLogin } from "@/services/api/auth.api";
 import VoidLogo from "@/assets/void_manage_logo.png";
 
 export function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -75,7 +78,7 @@ export function LoginPage() {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label
                 htmlFor="password"
                 className="text-sm font-semibold text-gray-700 block"
@@ -84,11 +87,23 @@ export function LoginPage() {
               </label>
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 {...register("password", { required: true })}
-                className="h-12 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500/20 focus:bg-white transition-all duration-200 rounded-xl"
+                className="h-12 pr-10 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500/20 focus:bg-white transition-all duration-200 rounded-xl"
               />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-[42px] text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
               {errors.password && (
                 <span className="text-red-500 text-sm font-medium flex items-center gap-1">
                   Password is required

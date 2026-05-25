@@ -27,7 +27,7 @@ API.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       Cookies.remove("token");
-      window.location.href = process.env.NEXT_PUBLIC_DOMAIN_PREFIX + '/auth/login';
+      window.location.href = (process.env.NEXT_PUBLIC_DOMAIN_PREFIX || "") + '/auth/login';
     }
     return Promise.reject(error);
   }

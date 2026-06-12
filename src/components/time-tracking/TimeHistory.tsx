@@ -48,11 +48,11 @@ const TimeHistory = () => {
   const getDateRange = () => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
     
     switch (dateFilter) {
       case "today":
-        const endOfToday = new Date(today);
-        endOfToday.setHours(23, 59, 59, 999); // End of today (23:59:59.999)
         return {
           startDate: today.toISOString(), // Start of today (00:00:00)
           endDate: endOfToday.toISOString() // End of today (23:59:59.999)
@@ -60,9 +60,11 @@ const TimeHistory = () => {
       case "yesterday":
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
+        const endOfYesterday = new Date(yesterday);
+        endOfYesterday.setHours(23, 59, 59, 999);
         return {
           startDate: yesterday.toISOString(),
-          endDate: yesterday.toISOString()
+          endDate: endOfYesterday.toISOString()
         };
       case "thisWeek":
         const startOfWeek = new Date(today);
@@ -72,27 +74,27 @@ const TimeHistory = () => {
         startOfWeek.setDate(today.getDate() - daysToMonday);
         return {
           startDate: startOfWeek.toISOString(),
-          endDate: today.toISOString()
+          endDate: endOfToday.toISOString()
         };
       case "last7Days":
         const last7Days = new Date(today);
         last7Days.setDate(today.getDate() - 6); // 6 days ago + today = 7 days
         return {
           startDate: last7Days.toISOString(),
-          endDate: today.toISOString()
+          endDate: endOfToday.toISOString()
         };
       case "thisMonth":
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         return {
           startDate: startOfMonth.toISOString(),
-          endDate: today.toISOString()
+          endDate: endOfToday.toISOString()
         };
       case "last30Days":
         const last30Days = new Date(today);
         last30Days.setDate(today.getDate() - 29); // 29 days ago + today = 30 days
         return {
           startDate: last30Days.toISOString(),
-          endDate: today.toISOString()
+          endDate: endOfToday.toISOString()
         };
       case "custom":
         return {
@@ -204,13 +206,16 @@ const TimeHistory = () => {
             <div className="flex items-center justify-between">
               <p className="text-sm text-blue-700">
                 Showing entries for: {" "}
-                {startDate && endDate && startDate === endDate ? (
-                  <span className="font-medium">{new Date(startDate).toLocaleDateString()}</span>
+                {startDate && endDate && 
+                 new Date(startDate).toLocaleDateString() === new Date(endDate).toLocaleDateString() ? (
+                  <span className="font-medium">
+                    {new Date(startDate).toLocaleDateString()}
+                  </span>
                 ) : (
                   <span className="font-medium">
-                    {startDate ? new Date(startDate).toLocaleDateString() : 'Start'} 
-                    {" → "} 
-                    {endDate ? new Date(endDate).toLocaleDateString() : 'End'}
+                      {startDate ? new Date(startDate).toLocaleDateString() : 'Start'}
+                      {" → "} 
+                      {endDate ? new Date(endDate).toLocaleDateString() : 'End'}
                   </span>
                 )}
               </p>
@@ -232,7 +237,9 @@ const TimeHistory = () => {
               <p className="text-gray-600">No time entries found</p>
             </div>
           ) : (
-            checkInHistory?.items?.slice()?.map((entry: ITimeDataBase) => (
+            [...(checkInHistory?.items || [])]
+              .sort((a: ITimeDataBase, b: ITimeDataBase) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime())
+              .map((entry: ITimeDataBase) => (
               <div
                 key={entry?._id}
                 className="flex items-center justify-between p-4 bg-gray-100 rounded-lg"
@@ -258,9 +265,9 @@ const TimeHistory = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  {entry?.durationHours ? (
+                  {entry?.checkOutTime ? (
                     <span className="text-gray-800 font-medium">
-                      {formatDuration (entry?.durationHours)}
+                      {formatDuration(entry?.durationHours || 0)}
                     </span>
                   ) : (
                     <span className="text-green-500 font-medium">

@@ -18,6 +18,7 @@ import {
 } from "@/services/api/time.api";
 import { useGetUserData } from "@/services/api/user.api";
 import { useQueryClient } from "@tanstack/react-query";
+import type { ITimeDataBase } from "@/types/time.type";
 
 const formatTime = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -62,7 +63,7 @@ const CheckInOut = () => {
   useEffect(() => {
     if (!checkInHistory) return;
 
-    const activeSession = checkInHistory?.items?.find(item => !item.checkOutTime);
+    const activeSession = checkInHistory?.items?.find((item: ITimeDataBase) => !item.checkOutTime);
     
     if (activeSession) {
       setIsCheckedIn(true);
@@ -79,7 +80,7 @@ const CheckInOut = () => {
       setSessionTime(0);
 
       // Find the last completed session to show the checkout time
-      const lastSession = checkInHistory?.items?.find(item => item.checkOutTime);
+      const lastSession = checkInHistory?.items?.find((item: ITimeDataBase) => item.checkOutTime);
       if (lastSession) {
         const outDate = new Date(lastSession.checkOutTime);
         setLastCheckOutTime(outDate);
@@ -92,6 +93,8 @@ const CheckInOut = () => {
   }, [checkInHistory]);
 
   const handleCheckIn = () => {
+    if (isCheckedIn || isCheckingIn) return;
+
     checkIn(undefined, {
       onSuccess: () => {
         queryClient.invalidateQueries({

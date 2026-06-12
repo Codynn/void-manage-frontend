@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Timer, Play, Square } from "lucide-react";
+import { Timer, Play, Square, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
@@ -34,17 +34,60 @@ const CheckInOut = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [currentSession, setCurrentSession] = useState<Date | null>(null);
   const [sessionTime, setSessionTime] = useState(0);
+  const [lastCheckOutTime, setLastCheckOutTime] = useState<Date | null>(null);
+
+  // Persist state to localStorage to avoid "disappearing" on navigation and provide instant UI
+  useEffect(() => {
+    const savedStatus = localStorage.getItem("is_checked_in") === "true";
+    const savedStart = localStorage.getItem("session_start");
+    const savedLastOut = localStorage.getItem("last_check_out");
+
+    if (savedStatus && savedStart) {
+      const startTime = new Date(savedStart);
+      setIsCheckedIn(true);
+      setCurrentSession(startTime);
+      setSessionTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
+    }
+    if (savedLastOut) {
+      setLastCheckOutTime(new Date(savedLastOut));
+    }
+  }, []);
 
   // API CALLS
   const { data: userData } = useGetUserData();
   const { mutate: checkIn, isPending: isCheckingIn } = useCheckIn();
   const { mutate: checkOut, isPending: isCheckingOut } = useCheckOut();
-  const { data: checkInHistory } = useGetCheckInHistory(userData?.username);
+  const { data: checkInHistory, isLoading: isHistoryLoading } = useGetCheckInHistory(userData?.username);
 
   useEffect(() => {
-    if (checkInHistory && !checkInHistory?.items[0]?.checkOutTime && checkInHistory?.items[0]?.checkInTime) {
+    if (!checkInHistory) return;
+
+    const activeSession = checkInHistory?.items?.find(item => !item.checkOutTime);
+    
+    if (activeSession) {
       setIsCheckedIn(true);
-      setCurrentSession(new Date(checkInHistory?.items[0]?.checkInTime));
+      const startTime = new Date(activeSession.checkInTime);
+      setCurrentSession(startTime);
+      // Immediately calculate the elapsed time so the timer doesn't jump from 0
+      setSessionTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
+
+      localStorage.setItem("is_checked_in", "true");
+      localStorage.setItem("session_start", startTime.toISOString());
+    } else {
+      setIsCheckedIn(false);
+      setCurrentSession(null);
+      setSessionTime(0);
+
+      // Find the last completed session to show the checkout time
+      const lastSession = checkInHistory?.items?.find(item => item.checkOutTime);
+      if (lastSession) {
+        const outDate = new Date(lastSession.checkOutTime);
+        setLastCheckOutTime(outDate);
+        localStorage.setItem("last_check_out", outDate.toISOString());
+      }
+
+      localStorage.removeItem("is_checked_in");
+      localStorage.removeItem("session_start");
     }
   }, [checkInHistory]);
 
@@ -60,6 +103,8 @@ const CheckInOut = () => {
     setIsCheckedIn(true);
     setCurrentSession(now);
     setSessionTime(0);
+    localStorage.setItem("is_checked_in", "true");
+    localStorage.setItem("session_start", now.toISOString());
   };
 
   // Timer for current session
@@ -76,6 +121,7 @@ const CheckInOut = () => {
   }, [isCheckedIn, currentSession]);
   const handleCheckOut = () => {
     if (currentSession) {
+      const now = new Date();
       checkOut(undefined, {
         onSuccess: () => {
           queryClient.invalidateQueries({
@@ -87,6 +133,10 @@ const CheckInOut = () => {
       setIsCheckedIn(false);
       setCurrentSession(null);
       setSessionTime(0);
+      setLastCheckOutTime(now);
+      localStorage.setItem("last_check_out", now.toISOString());
+      localStorage.removeItem("is_checked_in");
+      localStorage.removeItem("session_start");
     }
   };
 
@@ -96,11 +146,16 @@ const CheckInOut = () => {
         <CardTitle className="text-gray-800 flex items-center gap-2">
           <Timer className="w-5 h-5" />
           Current Session
+          {isHistoryLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400 ml-auto" />}
         </CardTitle>
         <CardDescription className="text-gray-600">
           {isCheckedIn
             ? "You are currently checked in"
-            : "You are currently checked out"}
+            : `You are currently checked out${
+                lastCheckOutTime
+                  ? ` at ${lastCheckOutTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                  : ""
+              }`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -17,6 +17,7 @@ import {
   UserDailyChecklist,
   MilestoneSection,
   UserAssignedContract,
+  UserCertificates,
 } from "@/components/user";
 
 const UserViewPage = () => {
@@ -121,6 +122,9 @@ const UserViewPage = () => {
 
             {/* Assigned Contract */}
             <UserAssignedContract userData={userData} currentUserRole={currentUserRole} />
+
+            {/* Certificates */}
+            <UserCertificates userData={userData} currentUserRole={currentUserRole} />
 
             {/* Assigned Leaves */}
 

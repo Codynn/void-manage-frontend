@@ -19,6 +19,7 @@ export { default as CheckpointsList } from "./CheckpointsList";
 export { default as AssignTemplateDialog } from "./AssignTemplateDialog";
 export { UserAssignedContract } from "./UserAssignedContract";
 export { AssignContractDialog } from "./AssignContractDialog";
+export { UserCertificates } from "./UserCertificates";
 export { UserDailyChecklist } from "./UserDailyChecklist";
 
 // Re-export hooks

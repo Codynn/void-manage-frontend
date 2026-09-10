@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,9 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetContractTemplates, useCreateAssignContract } from "@/services/api/contract.api";
-import { Badge } from "@/components/ui/badge";
 import { FileText, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import {
+  MANUAL_PLACEHOLDERS,
+  extractPlaceholderKeys,
+} from "@/lib/contractPlaceholders";
 
 interface AssignContractDialogProps {
   open: boolean;
@@ -35,9 +38,25 @@ export const AssignContractDialog = ({
   userName,
 }: AssignContractDialogProps) => {
   const [selectedContractId, setSelectedContractId] = useState<string>("");
-  
+  const [placeholderValues, setPlaceholderValues] = useState<Record<string, string>>({});
+
   const { data: contractTemplates, isLoading } = useGetContractTemplates();
   const { mutate: assignContract, isPending } = useCreateAssignContract();
+
+  const selectedContract = contractTemplates?.items?.find(
+    (contract: any) => contract._id === selectedContractId
+  );
+
+  const requiredPlaceholders = useMemo(() => {
+    if (!selectedContract) return [];
+    const keysInContent = extractPlaceholderKeys(selectedContract.content);
+    return MANUAL_PLACEHOLDERS.filter((p) => keysInContent.includes(p.key));
+  }, [selectedContract]);
+
+  const handleSelectContract = (id: string) => {
+    setSelectedContractId(id);
+    setPlaceholderValues({});
+  };
 
   const handleAssign = () => {
     if (!selectedContractId) {
@@ -45,16 +64,24 @@ export const AssignContractDialog = ({
       return;
     }
 
+    const missing = requiredPlaceholders.filter((p) => !placeholderValues[p.key]?.trim());
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.map((p) => p.label).join(", ")}`);
+      return;
+    }
+
     assignContract(
       {
         contractId: selectedContractId,
         assignedTo: userId,
+        placeholderValues,
       },
       {
         onSuccess: () => {
           toast.success("Contract assigned successfully");
           onOpenChange(false);
           setSelectedContractId("");
+          setPlaceholderValues({});
         },
         onError: (error: any) => {
           toast.error(error?.response?.data?.message || "Failed to assign contract");
@@ -63,24 +90,18 @@ export const AssignContractDialog = ({
     );
   };
 
-  const selectedContract = contractTemplates?.items?.find(
-    (contract: any) => contract._id === selectedContractId
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Assign Contract</DialogTitle>
-          <DialogDescription>
-            Assign an internship contract to {userName}
-          </DialogDescription>
+          <DialogDescription>Assign an internship contract to {userName}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="contract">Select Contract Template</Label>
-            <Select value={selectedContractId} onValueChange={setSelectedContractId}>
+            <Select value={selectedContractId} onValueChange={handleSelectContract}>
               <SelectTrigger id="contract">
                 <SelectValue placeholder="Choose a contract template" />
               </SelectTrigger>
@@ -116,60 +137,42 @@ export const AssignContractDialog = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-gray-600 text-xs">Duration</p>
-                  <p className="font-medium">{selectedContract.totalDurationHours} hours</p>
+              {requiredPlaceholders.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-gray-600">
+                    Fill in the details for this contract
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {requiredPlaceholders.map((p) => (
+                      <div key={p.key} className="space-y-1">
+                        <Label htmlFor={p.key} className="text-xs">
+                          {p.label}
+                        </Label>
+                        <Input
+                          id={p.key}
+                          type={p.kind === "date" ? "date" : p.kind === "number" ? "number" : "text"}
+                          value={placeholderValues[p.key] || ""}
+                          onChange={(e) =>
+                            setPlaceholderValues((prev) => ({
+                              ...prev,
+                              [p.key]: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-600 text-xs">Mode</p>
-                  <p className="font-medium capitalize">{selectedContract.mode}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-gray-600 text-xs mb-2">Tools & Technologies</p>
-                <div className="flex flex-wrap gap-1">
-                  {selectedContract.tools?.map((tool: string) => (
-                    <Badge key={tool} variant="outline" className="text-xs capitalize">
-                      {tool}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-gray-600 text-xs mb-2">Terms ({selectedContract.terms?.length || 0})</p>
-                <div className="space-y-1">
-                  {selectedContract.terms?.slice(0, 2).map((term: string, index: number) => (
-                    <p key={index} className="text-xs text-gray-700">
-                      • {term}
-                    </p>
-                  ))}
-                  {selectedContract.terms?.length > 2 && (
-                    <p className="text-xs text-gray-500">
-                      +{selectedContract.terms.length - 2} more terms
-                    </p>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Cancel
           </Button>
-          <Button
-            onClick={handleAssign}
-            disabled={!selectedContractId || isPending}
-            className="gap-2"
-          >
+          <Button onClick={handleAssign} disabled={!selectedContractId || isPending} className="gap-2">
             {isPending ? (
               <>
                 <Clock className="w-4 h-4 animate-spin" />

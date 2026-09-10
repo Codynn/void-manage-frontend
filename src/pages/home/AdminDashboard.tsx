@@ -2,7 +2,7 @@ import Header from "@/components/layout/Header";
 import DataView from "../../components/home/DataView";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { FileText, Clock, Calendar, User, Flag, ClipboardList } from "lucide-react";
+import { FileText, Clock, Calendar, User, Flag, ClipboardList, Folder, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import CreateLinkDialog from "@/components/home/CreateLinkDialog";
 import LinkSection from "@/components/home/LinkSection";
@@ -86,6 +86,26 @@ const AdminDashboard = () => {
               >
                 <Flag className="mr-2 h-4 w-4" />
                 Milestones
+              </Button>
+            </Link>
+
+            <Link to="/admin/documents" className="w-full ">
+              <Button
+                variant="outline"
+                className="w-full border-border bg-transparent text-foreground hover:bg-muted"
+              >
+                <Folder className="mr-2 h-4 w-4" />
+                Documents
+              </Button>
+            </Link>
+
+            <Link to="/admin/certificates" className="w-full ">
+              <Button
+                variant="outline"
+                className="w-full border-border bg-transparent text-foreground hover:bg-muted"
+              >
+                <Award className="mr-2 h-4 w-4" />
+                Certificates
               </Button>
             </Link>
 

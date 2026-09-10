@@ -88,21 +88,33 @@ export const useGetAssignedContract = () => {
   });
 };
 
+export const useGetAssignedContractsByUserId = (userId?: string) => {
+  return useQuery({
+    queryKey: ["assignedContract", userId],
+    queryFn: async () => {
+      const response = await API.get(`/contracts/assigned/${userId}`);
+      return response?.data?.data || {};
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+};
+
 export const useSignContract = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
-      const formData = new FormData();
-      formData.append('signature', data.signature);
-      formData.append('agreedToTerms', data.agreedToTerms.toString());
-      
+    mutationFn: async (data: {
+      instanceId: string;
+      signatureFileId: string;
+      agreedToTerms: boolean;
+    }) => {
       const response = await API.post(
         `/contracts/instance/${data.instanceId}`,
-        formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          signatureFileId: data.signatureFileId,
+          agreedToTerms: data.agreedToTerms,
         }
       );
       return response.data;
@@ -117,6 +129,44 @@ export const useSignContract = () => {
       toast.error(
         error?.response?.data?.message || "Failed to sign contract"
       );
+    },
+  });
+};
+
+export const useApproveContract = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (instanceId: string) => {
+      const response = await API.post(`/contracts/instance/${instanceId}/approve`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Contract approved successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["assignedContract"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to approve contract");
+    },
+  });
+};
+
+export const useRejectContract = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ instanceId, message }: { instanceId: string; message: string }) => {
+      const response = await API.post(`/contracts/instance/${instanceId}/reject`, { message });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Contract rejected");
+      queryClient.invalidateQueries({
+        queryKey: ["assignedContract"],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to reject contract");
     },
   });
 };
@@ -145,7 +195,11 @@ export const useDeleteContract = () => {
 export const useCreateAssignContract = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { contractId: string; assignedTo: string }) => {
+    mutationFn: async (data: {
+      contractId: string;
+      assignedTo: string;
+      placeholderValues?: Record<string, string>;
+    }) => {
       const response = await API.post("/contracts/assignContract", data);
       return response.data;
     },

@@ -35,6 +35,10 @@ import EditTaskPage from "./pages/milestone/EditTaskPage.tsx";
 import AssignTaskPage from "@/pages/milestone/AssignTaskPage";
 import MentorIndividualAssignment from "./pages/milestone/MentorIndividualAssignment.tsx";
 import AdminTimesheetPage from "./pages/time-tracking/AdminTimesheetPage.tsx";
+import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
+import CertificateTemplatesPage from "./pages/certificate/CertificateTemplatesPage.tsx";
+import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
+import InternCertificatesPage from "./pages/certificate/InternCertificatesPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -177,6 +181,27 @@ const router = createBrowserRouter([
             path: "time-history/:userId",
             element: <AdminTimeHistoryPage />,
           },
+          {
+            path: "documents",
+            element: <AdminDocumentsPage />,
+          },
+          {
+            path: "certificates",
+            children: [
+              {
+                path: "",
+                element: <CertificateTemplatesPage />,
+              },
+              {
+                path: "create",
+                element: <CreateCertificateTemplate />,
+              },
+              {
+                path: "edit/:id",
+                element: <CreateCertificateTemplate />,
+              },
+            ],
+          },
         ],
       },
       {
@@ -197,6 +222,10 @@ const router = createBrowserRouter([
           {
             path: "contract",
             element: <InternContractPage />,
+          },
+          {
+            path: "certificates",
+            element: <InternCertificatesPage />,
           },
           {
             path: "leave",

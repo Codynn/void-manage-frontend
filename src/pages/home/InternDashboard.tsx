@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Clock, Calendar, Camera } from "lucide-react";
+import { FileText, Clock, Calendar, Camera, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import InternLinkSection from "@/components/home/InternLinkSection";
@@ -84,6 +84,15 @@ useEffect(() => {
               >
                 <Camera className="w-4 h-4 mr-2" />
                 Milestones
+              </Button>
+            </Link>
+            <Link to="/intern/certificates" className="w-full">
+              <Button
+                variant="outline"
+                className="border-border text-foreground hover:bg-muted bg-transparent w-full"
+              >
+                <Award className="w-4 h-4 mr-2" />
+                Certificates
               </Button>
             </Link>
           </CardContent>

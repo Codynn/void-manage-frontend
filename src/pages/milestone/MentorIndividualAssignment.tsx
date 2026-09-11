@@ -6,7 +6,7 @@ const MentorIndividualAssignments = () => {
   const [view, setView] = useState<"assign" | "view">("assign");
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl space-y-6 p-6">
+    <main className="space-y-6 p-6">
       <div className="mb-6 flex gap-4">
         <button
           onClick={() => setView("assign")}

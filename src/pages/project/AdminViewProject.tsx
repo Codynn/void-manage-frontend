@@ -59,7 +59,7 @@ const AdminViewProject = () => {
 
   if (projectLoading) {
     return (
-      <main className="min-h-screen  p-6 max-w-7xl mx-auto space-y-6">
+      <main className="p-6 space-y-6">
         <div className="space-y-4">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -80,7 +80,7 @@ const AdminViewProject = () => {
 
   if (!project) {
     return (
-      <main className="min-h-screen  p-6 max-w-7xl mx-auto space-y-6">
+      <main className="p-6 space-y-6">
         <Card className="p-12 text-center">
           <h3 className="text-lg font-semibold mb-2">Project not found</h3>
           <p className="text-muted-foreground mb-4">
@@ -96,7 +96,7 @@ const AdminViewProject = () => {
   }
 
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <ProjectHeader project={project} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

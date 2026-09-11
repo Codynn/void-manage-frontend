@@ -160,13 +160,13 @@ const UserCard = ({ user, showDeleteOption = false }: UserCardProps) => {
                 <span className="text-xs font-medium text-foreground">Current Phase</span>
               </div>
               <div className="flex flex-wrap gap-1">
-                {user.currentPhase.map((phase, index) => (
+                {user.currentPhase.map((phase: any, index: number) => (
                   <Badge
-                    key={index}
+                    key={phase?._id || index}
                     variant="outline"
                     className="border-border px-1.5 py-0 text-xs text-foreground"
                   >
-                    {phase}
+                    {typeof phase === "string" ? phase : phase?.name}
                   </Badge>
                 ))}
               </div>

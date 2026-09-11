@@ -14,7 +14,7 @@ const AdminTimesheetPage = () => {
         <div>
           <h1 className="text-3xl font-bold">Admin Timesheets</h1>
           <p className="text-muted-foreground mt-1">
-            Manage and view all user schedules
+            Actual attendance and pre-set weekly schedules for all users
           </p>
         </div>
       </div>
@@ -22,9 +22,9 @@ const AdminTimesheetPage = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="users">By Users</TabsTrigger>
-          <TabsTrigger value="date">By Date</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="users">Attendance</TabsTrigger>
+          <TabsTrigger value="date">Schedule (By Date)</TabsTrigger>
+          <TabsTrigger value="timeline">Schedule (Timeline)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-6">

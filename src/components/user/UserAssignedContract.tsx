@@ -232,6 +232,9 @@ export const UserAssignedContract = ({
                 userEmail: userData.email,
                 ...assignedContract.placeholderValues,
                 signatureImage: assignedContract.signatureFileUrl?.url,
+                signedAtDate: assignedContract.signedAt
+                  ? new Date(assignedContract.signedAt).toLocaleDateString()
+                  : undefined,
               }}
             />
           </DialogContent>

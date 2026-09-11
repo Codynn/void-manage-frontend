@@ -12,8 +12,7 @@ import LeaveLayout from "./components/layout/LeaveLayout.tsx";
 import AdminProjectPage from "./pages/project/AdminProjectPage.tsx";
 import CreateProject from "./pages/project/CreateProject.tsx";
 import AdminViewProject from "./pages/project/AdminViewProject.tsx";
-import AdminWrapper from "./components/layout/AdminWrapper.tsx";
-import ContractPage from "./pages/contract/ContractPage.tsx";
+import DashboardLayout from "./components/layout/DashboardLayout.tsx";
 import CreateTemplate from "./pages/contract/CreateTemplate.tsx";
 import UsersPage from "./pages/user/UsersPage.tsx";
 import UserViewPage from "./pages/user/UserViewPage.tsx";
@@ -35,10 +34,11 @@ import EditTaskPage from "./pages/milestone/EditTaskPage.tsx";
 import AssignTaskPage from "@/pages/milestone/AssignTaskPage";
 import MentorIndividualAssignment from "./pages/milestone/MentorIndividualAssignment.tsx";
 import AdminTimesheetPage from "./pages/time-tracking/AdminTimesheetPage.tsx";
+import AdminWorkingHoursRequestsPage from "./pages/time-tracking/AdminWorkingHoursRequestsPage.tsx";
 import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
-import CertificateTemplatesPage from "./pages/certificate/CertificateTemplatesPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
 import InternCertificatesPage from "./pages/certificate/InternCertificatesPage.tsx";
+import TemplatesPage from "./pages/templates/TemplatesPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
       },
       {
         path: "admin",
-        element: <AdminWrapper />,
+        element: <DashboardLayout allowedRoles={["ADMIN"]} />,
         children: [
           {
             path: "dashboard",
@@ -102,12 +102,12 @@ const router = createBrowserRouter([
             ],
           },
           {
+            path: "templates",
+            element: <TemplatesPage />,
+          },
+          {
             path: "contract",
             children: [
-              {
-                path: "",
-                element: <ContractPage />,
-              },
               {
                 path: "create",
                 element: <CreateTemplate />,
@@ -135,6 +135,10 @@ const router = createBrowserRouter([
           {
             path: "timesheets",
             element: <AdminTimesheetPage />,
+          },
+          {
+            path: "working-hours-requests",
+            element: <AdminWorkingHoursRequestsPage />,
           },
           {
             path: "milestones",
@@ -189,10 +193,6 @@ const router = createBrowserRouter([
             path: "certificates",
             children: [
               {
-                path: "",
-                element: <CertificateTemplatesPage />,
-              },
-              {
                 path: "create",
                 element: <CreateCertificateTemplate />,
               },
@@ -206,6 +206,7 @@ const router = createBrowserRouter([
       },
       {
         path: "intern",
+        element: <DashboardLayout allowedRoles={["INTERN"]} />,
         children: [
           {
             path: "dashboard",
@@ -239,6 +240,7 @@ const router = createBrowserRouter([
       },
       {
         path: "mentor",
+        element: <DashboardLayout allowedRoles={["MENTOR"]} />,
         children: [
           {
             path: "dashboard",

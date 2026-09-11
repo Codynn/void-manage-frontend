@@ -1,6 +1,6 @@
 import TitleHeader from "@/components/layout/TitleHeader";
 import { useState } from "react";
-import { Plus, Search, User, Calendar, Eye, Edit2, Trash2, Award } from "lucide-react";
+import { Plus, Search, User, Calendar, Eye, Edit2, Trash2, FileStack } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -16,29 +16,69 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { useGetContractTemplates, useDeleteContract } from "@/services/api/contract.api";
 import {
   useGetCertificateTemplates,
   useDeleteCertificateTemplate,
 } from "@/services/api/certificate.api";
 import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
-import type { CertificateType, ICertificateTemplateBase } from "@/types/certificate.type";
+import type { JSONContent } from "@tiptap/react";
+import type { ContractLayout } from "@/components/contract/LetterheadCanvas";
 
-const TYPE_LABEL: Record<CertificateType, string> = {
-  completion: "Completion Certificate",
-  recommendation: "Letter of Recommendation",
+type TemplateTab = "contract" | "completion" | "recommendation";
+
+interface UnifiedTemplate {
+  _id: string;
+  title: string;
+  companyName: string;
+  content: JSONContent;
+  layout: ContractLayout;
+  createdAt: string;
+  createdBy?: { username?: string };
+}
+
+const TAB_CONFIG: Record<
+  TemplateTab,
+  { label: string; createHref: string; editHrefBase: string }
+> = {
+  contract: {
+    label: "Contracts",
+    createHref: "/admin/contract/create",
+    editHrefBase: "/admin/contract/edit",
+  },
+  completion: {
+    label: "Completion Certificates",
+    createHref: "/admin/certificates/create?type=completion",
+    editHrefBase: "/admin/certificates/edit",
+  },
+  recommendation: {
+    label: "Letters of Recommendation",
+    createHref: "/admin/certificates/create?type=recommendation",
+    editHrefBase: "/admin/certificates/edit",
+  },
 };
 
-const CertificateTemplatesPage = () => {
+const TemplatesPage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<CertificateType>("completion");
+  const [activeTab, setActiveTab] = useState<TemplateTab>("contract");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState<ICertificateTemplateBase | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<ICertificateTemplateBase | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<UnifiedTemplate | null>(null);
 
   //   API CALLS
-  const { data: templatesData } = useGetCertificateTemplates(activeTab);
-  const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteCertificateTemplate();
+  const { data: contractsData } = useGetContractTemplates();
+  const { data: certificatesData } = useGetCertificateTemplates(
+    activeTab === "contract" ? undefined : activeTab
+  );
+  const { mutate: deleteContract, isPending: isDeletingContract } = useDeleteContract();
+  const { mutate: deleteCertificateTemplate, isPending: isDeletingCertificate } =
+    useDeleteCertificateTemplate();
+
+  const isDeleting = isDeletingContract || isDeletingCertificate;
+
+  const templates: UnifiedTemplate[] =
+    activeTab === "contract" ? contractsData?.items || [] : certificatesData?.items || [];
 
   const formatDate = (dateString: string) => {
     try {
@@ -48,47 +88,49 @@ const CertificateTemplatesPage = () => {
     }
   };
 
-  const filteredTemplates = (templatesData?.items || []).filter(
-    (template: ICertificateTemplateBase) =>
+  const filteredTemplates = templates.filter(
+    (template) =>
       template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.companyName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteClick = (template: ICertificateTemplateBase) => {
+  const handleDeleteClick = (template: UnifiedTemplate) => {
     setTemplateToDelete(template);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    if (templateToDelete) {
-      deleteTemplate(templateToDelete._id, {
-        onSuccess: () => {
-          setDeleteDialogOpen(false);
-          setTemplateToDelete(null);
-        },
-      });
+    if (!templateToDelete) return;
+    const onSuccess = () => {
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
+    };
+    if (activeTab === "contract") {
+      deleteContract(templateToDelete._id, { onSuccess });
+    } else {
+      deleteCertificateTemplate(templateToDelete._id, { onSuccess });
     }
   };
 
+  const config = TAB_CONFIG[activeTab];
+
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <TitleHeader
-          title="Certificate Templates"
-          description="Manage completion certificates and recommendation letters"
+          title="Templates"
+          description="Manage contract, completion certificate, and recommendation letter templates"
           link="/admin/dashboard"
         />
-        <Button
-          onClick={() => navigate(`/admin/certificates/create?type=${activeTab}`)}
-          className="w-fit"
-        >
+        <Button onClick={() => navigate(config.createHref)} className="w-fit">
           <Plus className="h-4 w-4 mr-2" />
           Create Template
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CertificateType)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TemplateTab)}>
         <TabsList>
+          <TabsTrigger value="contract">Contracts</TabsTrigger>
           <TabsTrigger value="completion">Completion Certificates</TabsTrigger>
           <TabsTrigger value="recommendation">Letters of Recommendation</TabsTrigger>
         </TabsList>
@@ -107,13 +149,12 @@ const CertificateTemplatesPage = () => {
 
         <TabsContent value={activeTab} className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTemplates.map((template: ICertificateTemplateBase) => (
+            {filteredTemplates.map((template) => (
               <Card key={template._id} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h3 className="font-semibold text-lg">{template.title}</h3>
                     <p className="text-sm text-muted-foreground">{template.companyName}</p>
-                    <p className="text-xs text-muted-foreground">{TYPE_LABEL[template.type]}</p>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -154,7 +195,11 @@ const CertificateTemplatesPage = () => {
                       </DialogContent>
                     </Dialog>
 
-                    <Button variant="outline" size="sm" onClick={() => navigate(`edit/${template._id}`)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`${config.editHrefBase}/${template._id}`)}
+                    >
                       <Edit2 className="h-4 w-4" />
                     </Button>
 
@@ -174,14 +219,14 @@ const CertificateTemplatesPage = () => {
 
           {filteredTemplates.length === 0 && (
             <Card className="p-12 text-center">
-              <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <FileStack className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No templates found</h3>
               <p className="text-muted-foreground mb-4">
                 {searchTerm
                   ? "Try adjusting your search"
-                  : `Create your first ${TYPE_LABEL[activeTab].toLowerCase()} template to get started`}
+                  : `Create your first ${config.label.toLowerCase()} template to get started`}
               </p>
-              <Button onClick={() => navigate(`/admin/certificates/create?type=${activeTab}`)}>
+              <Button onClick={() => navigate(config.createHref)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Template
               </Button>
@@ -193,7 +238,7 @@ const CertificateTemplatesPage = () => {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Certificate Template</DialogTitle>
+            <DialogTitle>Delete Template</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete "{templateToDelete?.title}"? This action cannot be undone.
             </DialogDescription>
@@ -212,4 +257,4 @@ const CertificateTemplatesPage = () => {
   );
 };
 
-export default CertificateTemplatesPage;
+export default TemplatesPage;

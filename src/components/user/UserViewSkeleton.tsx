@@ -2,8 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const UserViewSkeleton = () => {
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <main className="bg-gray-50 dark:bg-gray-900 p-3">
+      <div className="space-y-4">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton className="h-8 w-8 rounded-md" />
           <div className="space-y-1">

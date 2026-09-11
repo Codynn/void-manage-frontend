@@ -70,3 +70,33 @@ export const useGetCheckInHistory = (username: string, startDate?: string, endDa
     enabled: !!username,
   });
 };
+
+export interface IAttendanceDay {
+  checkInTime: string;
+  checkOutTime?: string;
+  hours: number | null;
+}
+
+export interface IUserWeeklyAttendance {
+  userId: string;
+  userName: string;
+  userRole: string;
+  days: Record<string, IAttendanceDay[]>;
+}
+
+export const useGetWeeklyAttendance = (weekStart?: string) => {
+  return useQuery({
+    queryKey: ["weeklyAttendance", weekStart],
+    queryFn: async () => {
+      const response = await API.get("/checkins/weekly-attendance", {
+        params: weekStart ? { weekStart } : undefined,
+      });
+      return response?.data?.data as {
+        weekStart: string;
+        weekEnd: string;
+        users: IUserWeeklyAttendance[];
+      };
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+};

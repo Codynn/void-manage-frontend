@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/button";
 import YourInternSection from "@/components/home/YourInternSection";
 import LinkSection from "@/components/home/LinkSection";
 import CreateLinkDialog from "@/components/home/CreateLinkDialog";
+import OnboardingProgressWidget from "@/components/home/OnboardingProgressWidget";
 
 const MentorDashboard = () => {
   return (
-    <div className="mx-auto min-h-screen max-w-7xl space-y-6 p-6">
+    <div className="space-y-6 p-6">
       <Header />
       <DataView />
+
+      <OnboardingProgressWidget />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card className="border-border bg-card">

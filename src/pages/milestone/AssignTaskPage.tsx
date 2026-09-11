@@ -73,7 +73,7 @@ const AssignTaskPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-6">
+    <div className="max-w-lg space-y-6 p-6">
       <h1 className="text-2xl font-bold">Assign Task</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">

@@ -6,7 +6,7 @@ const AdminMilestone = () => {
   const [view, setView] = useState<"templates" | "daily">("templates");
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl space-y-6 bg-background p-6">
+    <main className="space-y-6 bg-background p-6">
       <TitleHeader
         title="Milestone"
         description="Manage milestones and checkpoints for all employees"

@@ -14,6 +14,8 @@ export const useSubmitWorkingHours = () => {
       (await API.post("/working-hours/request", data)).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-working-hours"] });
+      queryClient.invalidateQueries({ queryKey: ["my-working-hours-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["userData"] });
       toast.success("Working hours submitted successfully!");
     },
     onError: handleError,
@@ -30,10 +32,17 @@ interface WorkingHourRequest {
   adminComment?: string;
 }
 
-export const useGetWorkingHoursRequests = () =>
+export const useGetWorkingHoursRequests = (params?: { status?: string; userId?: string }) =>
   useQuery<WorkingHourRequest[], Error>({
-    queryKey: ["working-hours-requests"],
-    queryFn: async () => (await API.get("/working-hours/requests")).data.data,
+    queryKey: ["working-hours-requests", params],
+    queryFn: async () => (await API.get("/working-hours/requests", { params })).data.data,
+    staleTime: 1000 * 60 * 2,
+  });
+
+export const useGetMyWorkingHoursRequests = () =>
+  useQuery<WorkingHourRequest[], Error>({
+    queryKey: ["my-working-hours-requests"],
+    queryFn: async () => (await API.get("/working-hours/my-requests")).data.data,
     staleTime: 1000 * 60 * 2,
   });
 
@@ -43,6 +52,8 @@ export const useApproveWorkingHoursRequest = () => {
     mutationFn: async (id: string) => (await API.put(`/working-hours/requests/${id}/approve`)).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["working-hours-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["my-working-hours-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       toast.success("Request approved");
     },
     onError: handleError,

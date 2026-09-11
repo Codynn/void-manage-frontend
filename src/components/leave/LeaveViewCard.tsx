@@ -75,6 +75,16 @@ const LeaveViewCard = ({ request }: { request: ILeaveRequest }) => {
           {formatDate(request.createdAt)}
         </span>
       </div>
+
+      {request.status === "REJECTED" && request.reviewComment && (
+        <div className="mt-2 flex items-start gap-2 rounded-md bg-red-50 border border-red-200 p-2">
+          <XCircle className="w-3 h-3 text-red-600 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-red-700">
+            <span className="font-medium">Reason for rejection: </span>
+            {request.reviewComment}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

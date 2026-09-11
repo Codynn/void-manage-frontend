@@ -18,6 +18,7 @@ import {
   MilestoneSection,
   UserAssignedContract,
   UserCertificates,
+  UserAccountActions,
 } from "@/components/user";
 
 const UserViewPage = () => {
@@ -59,11 +60,11 @@ const UserViewPage = () => {
 
   if (!userData) {
     return (
-      <main className="min-h-screen bg-gray-50 p-3 dark:bg-gray-900">
-        <div className="mx-auto max-w-7xl">
+      <main className="bg-gray-50 p-3 dark:bg-gray-900">
+        <div className="">
           <div className="flex flex-col items-center justify-center py-16">
             <div className="max-w-sm rounded-lg bg-white p-8 text-center shadow dark:bg-gray-800">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                 <User className="h-8 w-8 text-gray-400" />
               </div>
               <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
@@ -86,8 +87,8 @@ const UserViewPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-3 dark:bg-gray-900">
-      <div className="mx-auto max-w-7xl space-y-4">
+    <main className="bg-gray-50 p-3 dark:bg-gray-900">
+      <div className="space-y-4">
         {/* Header */}
         <UserViewHeader
           userData={userData}
@@ -125,6 +126,9 @@ const UserViewPage = () => {
 
             {/* Certificates */}
             <UserCertificates userData={userData} currentUserRole={currentUserRole} />
+
+            {/* Account / Password */}
+            <UserAccountActions userData={userData} currentUserRole={currentUserRole} />
 
             {/* Assigned Leaves */}
 

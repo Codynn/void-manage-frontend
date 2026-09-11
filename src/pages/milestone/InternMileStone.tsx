@@ -10,7 +10,7 @@ const InternMileStone = () => {
   const phases = phasesResponse?.data?.items || [];
 
   return (
-    <main className="min-h-screen">
+    <main className="">
       <MilestoneTracker phases={phases} isLoading={phasesLoading} />
     </main>
   );

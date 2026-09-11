@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import API from "../axiosInstance";
 import toast from "react-hot-toast";
 import type { TLeaveRequestForm } from "@/types/leave.type";
 
 export const useCreateLeaveRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (leaveData: TLeaveRequestForm) => {
       const response = await API.post("/leaves", leaveData);
@@ -11,6 +12,9 @@ export const useCreateLeaveRequest = () => {
     },
     onSuccess: () => {
       toast.success("Leave request created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["myLeaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["myLeaveRequestsPaginated"] });
+      queryClient.invalidateQueries({ queryKey: ["userData"] });
     },
     onError: (error: any) => {
       toast.error(
@@ -21,19 +25,26 @@ export const useCreateLeaveRequest = () => {
 };
 
 export const useUpdateLeaveStatus = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       leaveId,
       status,
+      reviewComment,
     }: {
       leaveId: string;
       status: "APPROVED" | "REJECTED";
+      reviewComment?: string;
     }) => {
-      const response = await API.put(`/leaves/review/${leaveId}`, { status });
+      const response = await API.put(`/leaves/review/${leaveId}`, { status, reviewComment });
       return response.data;
     },
     onSuccess: () => {
       toast.success("Leave status updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["leaveStats"] });
+      queryClient.invalidateQueries({ queryKey: ["myLeaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["myLeaveRequestsPaginated"] });
     },
     onError: (error: any) => {
       toast.error(
@@ -44,6 +55,7 @@ export const useUpdateLeaveStatus = () => {
 };
 
 export const useDeleteLeaveRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (leaveId: string) => {
       const response = await API.delete(`/leaves/${leaveId}`);
@@ -51,6 +63,8 @@ export const useDeleteLeaveRequest = () => {
     },
     onSuccess: () => {
       toast.success("Leave request deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["leaveStats"] });
     },
     onError: (error: any) => {
       toast.error(
@@ -71,6 +85,24 @@ export const useGetLeaveRequests = (filters: any) => {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
+  });
+};
+
+export interface ILeaveStats {
+  total: number;
+  PENDING: number;
+  APPROVED: number;
+  REJECTED: number;
+}
+
+export const useGetLeaveStats = () => {
+  return useQuery<ILeaveStats>({
+    queryKey: ["leaveStats"],
+    queryFn: async () => {
+      const response = await API.get("/leaves/stats");
+      return response?.data?.data || { total: 0, PENDING: 0, APPROVED: 0, REJECTED: 0 };
+    },
+    staleTime: 1000 * 60 * 2,
   });
 };
 

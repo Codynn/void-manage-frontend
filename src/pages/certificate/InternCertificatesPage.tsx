@@ -47,7 +47,7 @@ const InternCertificatesPage = () => {
   };
 
   return (
-    <main className="min-h-screen p-6 max-w-5xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader title="My Certificates" description="View and download your issued certificates" />
 
       {!isLoading && list.length === 0 && (

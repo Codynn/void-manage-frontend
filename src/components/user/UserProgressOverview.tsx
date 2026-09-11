@@ -45,9 +45,9 @@ const UserProgressOverview = ({ userData }: UserProgressOverviewProps) => {
                 <span className="text-sm font-medium text-gray-900 dark:text-white">Current Phase</span>
               </div>
               <div className="flex flex-wrap gap-1">
-                {userData.currentPhase.map((phase: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {phase}
+                {userData.currentPhase.map((phase: any, index: number) => (
+                  <Badge key={phase?._id || index} variant="secondary" className="text-xs">
+                    {typeof phase === "string" ? phase : phase?.name}
                   </Badge>
                 ))}
               </div>

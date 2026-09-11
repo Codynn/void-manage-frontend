@@ -111,7 +111,7 @@ const AdminDocumentsPage = () => {
   const deletedFiles = (files || []).filter((f) => f.isDeleted);
 
   return (
-    <div className="mx-auto min-h-screen max-w-7xl space-y-6 p-6">
+    <div className="space-y-6 p-6">
       <TitleHeader title="Documents" description="All uploaded files across the platform" link="/admin/dashboard" />
       <Card className="border-border bg-card">
         <CardContent className="pt-6">

@@ -73,7 +73,7 @@ const CreateTemplate = () => {
   };
 
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader
         title={isEdit ? "Edit Contract Template" : "Create New Contract Template"}
         description="Author the contract content and position it on the letterhead"

@@ -57,7 +57,6 @@ export const useCreateUser = () => {
     mutationFn: async (userData: {
       email: string;
       username: string;
-      password: string;
       role: string;
       department?: string;
       designation?: string;
@@ -69,6 +68,53 @@ export const useCreateUser = () => {
     onSuccess: () => {
       // Invalidate and refetch users list
       queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};
+
+export const useResetUserPassword = () => {
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await API.post(`/users/${userId}/reset-password`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Password reset - the user has been emailed their new temporary password");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to reset password");
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const response = await API.post("/users/change-password", data);
+      return response.data;
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to change password");
+    },
+  });
+};
+
+export const useBulkCreateUsers = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await API.post("/users/bulk-create", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to upload users");
     },
   });
 };
@@ -128,24 +174,6 @@ export const useDeleteUser = () => {
   });
 };
 
-export const useUploadWelcomePhotos = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ userId, photos }: { userId: string; photos: string[] }) => {
-      const response = await API.post(`/users/welcome-photos/${userId}`, {
-        welcomePhotos: photos,
-      });
-      return response.data;
-    },
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch specific user data
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-  });
-};
-
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
@@ -155,25 +183,47 @@ export const useUpdateUser = () => {
       return response.data;
     },
     onSuccess: (_, variables) => {
+      toast.success("User updated successfully");
       // Invalidate and refetch specific user data
       queryClient.invalidateQueries({ queryKey: ["user", variables._id] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update user");
+    },
   });
 };
 
-export const useUpdateWelcomePhotos = () => {
+export const useAddWelcomePhotos = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, welcomePhotos }: { userId: string; welcomePhotos: string[] }) => {
-      const response = await API.put(`/users/updateUser/${userId}`, {
-        welcomePhotos,
-      });
+    mutationFn: async (urls: string[]) => {
+      const response = await API.post(`/users/welcome-photos`, { urls });
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Welcome photos updated successfully");
+      toast.success("Welcome photos added successfully");
       queryClient.invalidateQueries({ queryKey: ["userData"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to add welcome photos");
+    },
+  });
+};
+
+export const useRemoveWelcomePhoto = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (url: string) => {
+      const response = await API.delete(`/users/welcome-photos`, { data: { url } });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Photo removed");
+      queryClient.invalidateQueries({ queryKey: ["userData"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to remove photo");
     },
   });
 };

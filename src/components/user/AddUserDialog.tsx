@@ -12,17 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, LoaderCircle, Eye, EyeOff } from "lucide-react";
+import { Plus, LoaderCircle } from "lucide-react";
 import { useCreateUser } from "@/services/api/user.api";
 
 const AddUserDialog = () => {
   const [open, setOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     username: "",
-    password: "abc1",
     role: "INTERN"
   });
 
@@ -43,7 +41,6 @@ const AddUserDialog = () => {
       setFormData({
         email: "",
         username: "",
-        password: "abc1",
         role: "INTERN"
       });
     } catch (error: any) {
@@ -70,7 +67,7 @@ const AddUserDialog = () => {
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
-            Create a new user account. They will receive their login credentials.
+            A temporary password will be generated and emailed to them along with a link to the dashboard.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,33 +99,6 @@ const AddUserDialog = () => {
               onChange={(e) => handleInputChange("email", e.target.value)}
               required
             />
-          </div>
-
-          <div className="space-y-2 relative">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Default: abc1"
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              className="pr-10"
-            />
-            <button
-              type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-[34px] text-muted-foreground hover:text-foreground"
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-            <p className="text-xs text-muted-foreground">
-              Default password is "abc1". User can change it after first login.
-            </p>
           </div>
 
           <div className="space-y-2">

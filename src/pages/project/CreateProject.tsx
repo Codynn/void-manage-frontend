@@ -137,7 +137,7 @@ const CreateProject = () => {
   };
 
   return (
-    <main className="min-h-screen p-6 max-w-4xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader
         title={isEdit ? "Edit Project" : "Create New Project"}
         description="Set up a project with timeline, technologies, and team assignments"

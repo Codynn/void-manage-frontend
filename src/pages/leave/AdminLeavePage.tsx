@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import {
   useGetLeaveRequests,
+  useGetLeaveStats,
   useUpdateLeaveStatus,
   useDeleteLeaveRequest,
 } from "@/services/api/leave.api";
@@ -8,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,6 +20,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -68,10 +71,43 @@ const AdminLeavePage = () => {
     pageSize: 10,
   });
 
+  // Translate the "timeframe" preset into concrete dates the backend understands
+  const getTimeframeRange = (timeframe: FilterTimeframe) => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    switch (timeframe) {
+      case "THIS_WEEK": {
+        const dayOfWeek = startOfToday.getDay();
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const start = new Date(startOfToday);
+        start.setDate(start.getDate() - daysToMonday);
+        return { startDate: start.toISOString(), endDate: now.toISOString() };
+      }
+      case "THIS_MONTH": {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        return { startDate: start.toISOString(), endDate: now.toISOString() };
+      }
+      case "LAST_MONTH": {
+        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+        return { startDate: start.toISOString(), endDate: end.toISOString() };
+      }
+      default:
+        return {};
+    }
+  };
+
+  const { status, timeframe, intern, leaveType, search } = filters;
   const { data: leaveRequests, isLoading } = useGetLeaveRequests({
-    ...filters,
+    status: status !== "ALL" ? status : undefined,
+    leaveType: leaveType !== "ALL" ? leaveType : undefined,
+    intern: intern !== "ALL" ? intern : undefined,
+    search: search || undefined,
+    ...getTimeframeRange(timeframe),
     ...pagination,
   });
+  const { data: leaveStats } = useGetLeaveStats();
   const updateLeaveStatus = useUpdateLeaveStatus();
   const deleteLeaveRequest = useDeleteLeaveRequest();
   const queryClient = useQueryClient();
@@ -79,6 +115,8 @@ const AdminLeavePage = () => {
   const [selectedLeave, setSelectedLeave] = useState<ILeaveRequest | null>(
     null
   );
+  const [rejectTarget, setRejectTarget] = useState<ILeaveRequest | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   // Update filters function
   const updateFilters = (newFilters: Partial<typeof filters>) => {
@@ -146,27 +184,13 @@ const AdminLeavePage = () => {
     return pages;
   };
 
-  // Summary statistics
-  const stats = useMemo(() => {
-    const items = leaveRequests?.items || [];
-    const total = totalItems; // Use total from pagination
-    const pending = items?.filter(
-      (leave: ILeaveRequest) => leave.status === "PENDING"
-    ).length;
-    const approved = items?.filter(
-      (leave: ILeaveRequest) => leave.status === "APPROVED"
-    ).length;
-    const rejected = items?.filter(
-      (leave: ILeaveRequest) => leave.status === "REJECTED"
-    ).length;
-    const totalDays = items?.reduce(
-      (sum: number, leave: ILeaveRequest) => sum + leave.days,
-      0
-    );
-    const avgDays = total > 0 ? Math.round((totalDays / total) * 10) / 10 : 0;
-
-    return { total, pending, approved, rejected, totalDays, avgDays };
-  }, [leaveRequests?.items, totalItems]);
+  // Summary statistics - computed across the ENTIRE dataset, not just this page
+  const stats = {
+    total: leaveStats?.total || 0,
+    pending: leaveStats?.PENDING || 0,
+    approved: leaveStats?.APPROVED || 0,
+    rejected: leaveStats?.REJECTED || 0,
+  };
 
   // Unique interns for filter
   const uniqueInterns = useMemo(() => {
@@ -180,14 +204,22 @@ const AdminLeavePage = () => {
 
   const handleStatusUpdate = async (
     leaveId: string,
-    status: "APPROVED" | "REJECTED"
+    status: "APPROVED" | "REJECTED",
+    reviewComment?: string
   ) => {
     try {
-      await updateLeaveStatus.mutateAsync({ leaveId, status });
+      await updateLeaveStatus.mutateAsync({ leaveId, status, reviewComment });
       queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
     } catch (error) {
       console.error("Failed to update leave status:", error);
     }
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget || !rejectReason.trim()) return;
+    await handleStatusUpdate(rejectTarget._id, "REJECTED", rejectReason.trim());
+    setRejectTarget(null);
+    setRejectReason("");
   };
 
   const handleDeleteLeave = async (leaveId: string) => {
@@ -228,7 +260,7 @@ const AdminLeavePage = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="p-6 space-y-6">
         {/* Filters */}
         <Card className="border border-gray-200 gap-0">
           <CardHeader className="pb-2 flex items-center justify-between">
@@ -383,7 +415,7 @@ const AdminLeavePage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Filters */}
       <Card className="border border-gray-200 gap-0">
         <CardHeader className="pb-2 flex items-center justify-between">
@@ -597,7 +629,7 @@ const AdminLeavePage = () => {
         <CardContent className="pt-0">
           {filteredLeaveRequests?.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                 <CalendarDays className="h-6 w-6 text-gray-400" />
               </div>
               <h3 className="font-medium text-gray-900 mb-1">
@@ -679,9 +711,7 @@ const AdminLeavePage = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              handleStatusUpdate(leave._id, "REJECTED")
-                            }
+                            onClick={() => setRejectTarget(leave)}
                             disabled={updateLeaveStatus.isPending}
                             className="h-7 px-2 text-xs border-gray-400 text-gray-700 hover:bg-gray-50"
                           >
@@ -818,6 +848,21 @@ const AdminLeavePage = () => {
                                       </p>
                                     </CardContent>
                                   </Card>
+
+                                  {selectedLeave.status === "REJECTED" && selectedLeave.reviewComment && (
+                                    <Card className="border border-red-200 bg-red-50">
+                                      <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm text-red-800">
+                                          Rejection Reason
+                                        </CardTitle>
+                                      </CardHeader>
+                                      <CardContent>
+                                        <p className="text-sm text-red-700 whitespace-pre-wrap">
+                                          {selectedLeave.reviewComment}
+                                        </p>
+                                      </CardContent>
+                                    </Card>
+                                  )}
                                 </div>
                               )}
                             </DialogContent>
@@ -847,6 +892,12 @@ const AdminLeavePage = () => {
                       {formatDate(leave.createdAt)}
                     </span>
                   </div>
+
+                  {leave.status === "REJECTED" && leave.reviewComment && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Rejection reason: {leave.reviewComment}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -922,6 +973,37 @@ const AdminLeavePage = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Leave Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              This reason will be shown to {rejectTarget?.intern?.username}.
+            </p>
+            <Textarea
+              placeholder="e.g. Insufficient notice period"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!rejectReason.trim() || updateLeaveStatus.isPending}
+              onClick={handleConfirmReject}
+            >
+              {updateLeaveStatus.isPending ? "Rejecting..." : "Reject Request"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

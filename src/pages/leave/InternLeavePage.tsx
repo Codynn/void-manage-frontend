@@ -34,7 +34,7 @@ const InternLeavePage = () => {
     ?.reduce((sum: number, req: ILeaveRequest) => sum + req.days, 0);
 
   return (
-    <main className="min-h-screen p-4 md:p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-4 md:p-6 space-y-6">
       <TitleHeader
         title="Leave Requests"
         description="View and manage your leave requests"

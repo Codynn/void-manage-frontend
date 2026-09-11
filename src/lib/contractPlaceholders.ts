@@ -14,6 +14,7 @@ export const CONTRACT_PLACEHOLDERS: PlaceholderDef[] = [
   { key: "startDate", label: "Start Date", kind: "date", auto: false },
   { key: "endDate", label: "End Date", kind: "date", auto: false },
   { key: "signatureImage", label: "Signature Image", kind: "image", auto: true },
+  { key: "signedAtDate", label: "Signed Date", kind: "text", auto: true },
   { key: "internshipTitle", label: "Internship Title", kind: "text", auto: false },
   { key: "requiredWorkingHours", label: "Required Working Hours", kind: "number", auto: false },
   { key: "weeklyHoursRequired", label: "Weekly Hours Required", kind: "number", auto: false },

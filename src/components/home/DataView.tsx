@@ -98,7 +98,10 @@ const DataView = () => {
           },
           {
             title: "Current Phase",
-            value: userData?.currentPhase || "None",
+            value:
+              userData?.currentPhase?.find((p: any) => !p.isCompleted)?.name ||
+              userData?.currentPhase?.[0]?.name ||
+              "None",
             description: "Current phase of the internship",
           },
         ];

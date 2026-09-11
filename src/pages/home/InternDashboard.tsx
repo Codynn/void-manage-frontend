@@ -12,6 +12,7 @@ import { FileText, Clock, Calendar, Camera, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import InternLinkSection from "@/components/home/InternLinkSection";
+import OnboardingProgressWidget from "@/components/home/OnboardingProgressWidget";
 import { useUserDashboard } from "@/services/api/dashboard.api";
 import WelcomeModal from "../../components/home/WelcomeModal";
 
@@ -28,9 +29,11 @@ useEffect(() => {
 
 
   return (
-    <div className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 space-y-6">
       <Header />
       <DataView />
+
+      <OnboardingProgressWidget />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-card border-border">

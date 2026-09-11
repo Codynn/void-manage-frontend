@@ -26,6 +26,7 @@ export interface IPhaseTemplate {
   _id?: string;
   name: string;
   phases: IPhase[];
+  isOnboarding?: boolean;
 }
 
 export interface IUserPhase extends IPhase {

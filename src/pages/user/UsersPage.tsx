@@ -6,6 +6,7 @@ import UserStats from "@/components/user/UserStats";
 import UserGrid from "@/components/user/UserGrid";
 import MentorInternGrid from "@/components/user/MentorInternGrid";
 import AddUserDialog from "@/components/user/AddUserDialog";
+import BulkUploadUsersDialog from "@/components/user/BulkUploadUsersDialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { IUserData } from "@/types/user.type";
@@ -123,14 +124,17 @@ const                UsersPage = () => {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl space-y-6 p-6">
+    <main className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <TitleHeader
           title="User Management"
           description="Manage users and their roles within the organization"
           link="/admin/dashboard"
         />
-        <AddUserDialog />
+        <div className="flex gap-2">
+          <BulkUploadUsersDialog />
+          <AddUserDialog />
+        </div>
       </div>
 
       <UserStats usersList={usersList} />

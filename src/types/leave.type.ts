@@ -38,20 +38,34 @@ export const LEAVE_TYPE_LABELS = {
 
 export type LeaveType = keyof typeof LEAVE_TYPES;
 
+export type LeaveDurationType = "SINGLE_DAY" | "MULTI_DAY" | "SHIFT";
+
+export const LEAVE_DURATION_LABELS: Record<LeaveDurationType, string> = {
+  SINGLE_DAY: "Single Day",
+  MULTI_DAY: "Multiple Days",
+  SHIFT: "Shift (part of a day)",
+};
+
 export interface ILeaveRequest {
   _id: string;
   intern: IUserData;
   leaveType: LeaveType;
+  durationType: LeaveDurationType;
   startDate: string;
-  days: number;
   endDate: string;
+  shiftStartTime?: string;
+  shiftEndTime?: string;
+  days: number;
   reason: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  reviewedBy?: IUserData;
+  reviewedAt?: string;
+  reviewComment?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export type TLeaveRequestForm = Omit<
   ILeaveRequest,
-  "_id" | "intern" | "status" | "createdAt" | "updatedAt"
+  "_id" | "intern" | "status" | "createdAt" | "updatedAt" | "reviewedBy" | "reviewedAt" | "reviewComment" | "days"
 >;

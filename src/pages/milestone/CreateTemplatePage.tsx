@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useForm, useFieldArray } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { useState, useEffect } from "react";
-import { Plus, Trash2, GripVertical, Save, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, GripVertical, Save, ArrowLeft, Sparkles } from "lucide-react";
 import type { TPhaseTemplateForm, IPhase } from "@/types/milestone.type";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -29,6 +31,7 @@ const CreateTemplatePage = () => {
   } = useForm<TPhaseTemplateForm>({
     defaultValues: {
       name: "",
+      isOnboarding: false,
       phases: [
         {
           name: "",
@@ -63,6 +66,7 @@ const CreateTemplatePage = () => {
       const template = templateData.data;
       reset({
         name: template.name,
+        isOnboarding: template.isOnboarding || false,
         phases: template.phases.map((phase: IPhase, index: number) => ({
           ...phase,
           order: index + 1,
@@ -173,6 +177,26 @@ const CreateTemplatePage = () => {
                 <p className="mt-1 text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
+
+            <Controller
+              name="isOnboarding"
+              control={control}
+              render={({ field }) => (
+                <div className="mt-4 flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
+                  <Checkbox checked={!!field.value} onCheckedChange={field.onChange} className="mt-0.5" />
+                  <div className="cursor-pointer" onClick={() => field.onChange(!field.value)}>
+                    <Label className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      Use as the onboarding template
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Automatically assigned to every new user and shown as their onboarding
+                      progress on the dashboard. Only one template can be the onboarding template.
+                    </p>
+                  </div>
+                </div>
+              )}
+            />
           </CardContent>
         </Card>
 

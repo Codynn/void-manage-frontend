@@ -47,6 +47,9 @@ const InternContractPage = () => {
     ...contractInstance?.placeholderValues,
     // Once rejected, the old signature is cleared from view until a new one is attached
     signatureImage: canSign ? pendingSignaturePreviewUrl : contractInstance?.signatureFileUrl?.url,
+    signedAtDate: contractInstance?.signedAt
+      ? new Date(contractInstance.signedAt).toLocaleDateString()
+      : undefined,
   };
 
   const handleSignContract = async () => {
@@ -99,7 +102,7 @@ const InternContractPage = () => {
 
   if (!contractInstance) {
     return (
-      <main className="min-h-screen p-6 max-w-4xl mx-auto space-y-6">
+      <main className="p-6 space-y-6">
         <TitleHeader title="Contract Signing" description="Review and sign your internship agreement" />
         <Card>
           <CardContent className="p-12 text-center text-muted-foreground">
@@ -112,7 +115,7 @@ const InternContractPage = () => {
   }
 
   return (
-    <main className="min-h-screen p-6 max-w-4xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader title="Contract Signing" description="Review and sign your internship agreement" />
 
       {/* Contract Status */}

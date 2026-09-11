@@ -12,26 +12,30 @@ import { Label } from "@/components/ui/label";
 import { useUploadPhoto } from "@/services/api/upload.api";
 import {
   useGetUserData,
-  useUpdateWelcomePhotos,
+  useAddWelcomePhotos,
+  useRemoveWelcomePhoto,
 } from "@/services/api/user.api";
-import { Camera, CheckCircle, LoaderCircle, Upload } from "lucide-react";
+import { Camera, CheckCircle, LoaderCircle, Upload, X } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
-const samplePhotos = [
-  "https://preview-intern-onboarding-system-kzmq8gsc85c2cu147adw.vusercontent.net/placeholder.svg?height=200&width=200",
-  "https://preview-intern-onboarding-system-kzmq8gsc85c2cu147adw.vusercontent.net/placeholder.svg?height=200&width=200",
-  "https://preview-intern-onboarding-system-kzmq8gsc85c2cu147adw.vusercontent.net/placeholder.svg?height=200&width=200",
-];
+const MAX_PHOTOS = 10;
 
 const WelcomePhotos = () => {
   const { data: profileData } = useGetUserData();
   const [dragActive, setDragActive] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
-  const { mutate: updatePhotos } = useUpdateWelcomePhotos();
+  const [deletingUrl, setDeletingUrl] = useState<string | null>(null);
 
   //   API CALLS
   const { mutateAsync: uploadPhotos, isPending: uploading } = useUploadPhoto();
+  const { mutateAsync: addWelcomePhotos, isPending: saving } = useAddWelcomePhotos();
+  const { mutate: removePhoto } = useRemoveWelcomePhoto();
+
+  const existingPhotos: string[] = profileData?.welcomePhotos || [];
+  const remainingSlots = MAX_PHOTOS - existingPhotos.length;
+  const atLimit = remainingSlots <= 0;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -55,14 +59,17 @@ const WelcomePhotos = () => {
 
   const handleFiles = (fileList: FileList) => {
     const fileArray = Array.from(fileList);
-    const validImages = fileArray.filter(
-      (file) => file.size <= 5 * 1024 * 1024
-    ); 
+    const validImages = fileArray.filter((file) => file.size <= 5 * 1024 * 1024);
 
-    const previewURLs = validImages.map((file) => URL.createObjectURL(file));
+    if (validImages.length > remainingSlots) {
+      toast.error(`You can only add ${remainingSlots} more photo(s) (max ${MAX_PHOTOS} total)`);
+    }
+    const allowed = validImages.slice(0, remainingSlots);
+
+    const previewURLs = allowed.map((file) => URL.createObjectURL(file));
 
     setPreviews(previewURLs);
-    setFiles(validImages);
+    setFiles(allowed);
   };
 
   const handleClear = () => {
@@ -80,67 +87,122 @@ const WelcomePhotos = () => {
           formData.append("photo", file);
 
           const data = await uploadPhotos(formData);
-          const url = data?.data?.photo?.photoFile?.url; 
+          const url = data?.data?.photo?.photoFile?.url;
 
           if (!url) throw new Error("Upload failed: No URL returned");
           return url;
         })
       );
 
-      updatePhotos({ userId:profileData?._id, welcomePhotos: fileUrls });
+      await addWelcomePhotos(fileUrls);
+      handleClear();
     } catch (err) {
       console.error("Error uploading files:", err);
     }
   };
 
+  const handleDelete = (url: string) => {
+    setDeletingUrl(url);
+    removePhoto(url, { onSettled: () => setDeletingUrl(null) });
+  };
+
   return (
-    <main className="min-h-screen p-6 max-w-4xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader
         title="Welcome Photos"
         description="Upload photos for social media welcome posts"
       />
 
+      {/* Uploaded Photos */}
+      <Card className="bg-white border-gray-200">
+        <CardHeader>
+          <CardTitle className="text-gray-900 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Camera className="w-5 h-5" />
+              Your Photos
+            </span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {existingPhotos.length}/{MAX_PHOTOS}
+            </span>
+          </CardTitle>
+          <CardDescription className="text-gray-600">
+            Photos you've uploaded so far
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {existingPhotos.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              You haven't uploaded any welcome photos yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {existingPhotos.map((url) => (
+                <div key={url} className="relative group aspect-square">
+                  <img
+                    src={url}
+                    alt="Welcome"
+                    className="h-full w-full object-cover rounded-lg border border-gray-200"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                    disabled={deletingUrl === url}
+                    onClick={() => handleDelete(url)}
+                    aria-label="Delete photo"
+                  >
+                    {deletingUrl === url ? (
+                      <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <X className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="bg-white border-gray-200 relative">
         <CardHeader>
           <CardTitle className="text-gray-900 flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            Upload Your Photos
+            <Upload className="w-5 h-5" />
+            Add Photos
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Upload professional photos that can be used for social media welcome
-            posts
+            {atLimit
+              ? `You've reached the maximum of ${MAX_PHOTOS} photos. Delete one to add more.`
+              : `You can add up to ${remainingSlots} more photo(s).`}
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          {previews.length > 0 ? (
+          {atLimit ? null : previews.length > 0 ? (
             <div className="relative">
-              {/* Clear button at top right */}
               <Button
                 variant="destructive"
                 onClick={handleClear}
                 className="absolute top-0 right-0 mt-2 mr-2 "
               >
-                Clear / Re-upload
+                Clear
               </Button>
 
-              {/* Image preview centered */}
               <div className="flex justify-center items-center flex-wrap gap-4 mb-6 mt-4">
                 {previews.map((src, idx) => (
                   <img
                     key={idx}
                     src={src}
-                    alt={`Uploaded Preview ${idx + 1}`}
+                    alt={`Preview ${idx + 1}`}
                     className="h-48 w-auto object-contain rounded border"
                   />
                 ))}
               </div>
 
-              {/* Confirm button */}
               <div className="text-center">
-                <Button disabled={uploading} onClick={handleConfirmUpload}>
+                <Button disabled={uploading || saving} onClick={handleConfirmUpload}>
                   Confirm Upload
-                  {uploading && <LoaderCircle className="animate-spin ml-2" />}
+                  {(uploading || saving) && <LoaderCircle className="animate-spin ml-2" />}
                 </Button>
               </div>
             </div>
@@ -179,46 +241,6 @@ const WelcomePhotos = () => {
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Sample Photos */}
-      <Card className="bg-white border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-gray-900 text-2xl">
-            Sample Photos
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Examples of appropriate photos for social media and company use
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {samplePhotos.map((photo, index) => (
-              <div key={index} className="space-y-3">
-                <img
-                  src={photo || "/placeholder.svg"}
-                  alt={`Sample photo ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                />
-                <div className="space-y-1">
-                  <h4 className="text-gray-900 font-medium">
-                    {index === 0 && "Professional Headshot"}
-                    {index === 1 && "Workspace Setup"}
-                    {index === 2 && "Team Collaboration"}
-                  </h4>
-                  <p className="text-gray-600 text-sm">
-                    {index === 0 &&
-                      "Clear, professional photo for LinkedIn and company website"}
-                    {index === 1 &&
-                      "Your workspace setup showing your work environment"}
-                    {index === 2 &&
-                      "Photos during team meetings or collaborative work"}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
@@ -262,12 +284,6 @@ const WelcomePhotos = () => {
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
               <span className="text-gray-900">
                 Photos must be approved for company social media use
-              </span>
-            </div>
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <span className="text-gray-900">
-                Include a brief introduction about yourself in the submission
               </span>
             </div>
           </div>

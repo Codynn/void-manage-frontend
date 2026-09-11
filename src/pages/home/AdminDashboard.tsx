@@ -2,20 +2,51 @@ import Header from "@/components/layout/Header";
 import DataView from "../../components/home/DataView";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { FileText, Clock, Calendar, User, Flag, ClipboardList, Folder, Award } from "lucide-react";
+import { FileText, Calendar, User, Flag, ClipboardList, Folder, FileSignature, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import CreateLinkDialog from "@/components/home/CreateLinkDialog";
 import LinkSection from "@/components/home/LinkSection";
 import { Badge } from "@/components/ui/badge";
 import { useGetLeaveRequests } from "@/services/api/leave.api";
+import { useGetPhaseTemplates } from "@/services/api/milestone.api";
 
 const AdminDashboard = () => {
   const { data: leaveData } = useGetLeaveRequests({ status: "PENDING" });
+  const { data: phaseTemplates, isLoading: isLoadingTemplates } = useGetPhaseTemplates();
+
+  const templates = phaseTemplates || [];
+  const hasOnboardingTemplate = templates.some((t: any) => t.isOnboarding);
 
   return (
-    <div className="mx-auto  min-h-screen max-w-7xl space-y-6 p-6">
+    <div className="space-y-6 p-6">
       <Header />
       <DataView />
+
+      {!isLoadingTemplates && !hasOnboardingTemplate && (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-900">
+                  No onboarding template set up yet
+                </p>
+                <p className="text-sm text-amber-700">
+                  {templates.length === 0
+                    ? "You haven't created any phase templates. Create one and mark it as the onboarding template so new users get a guided setup checklist."
+                    : "None of your phase templates are marked as the onboarding template. New users won't get a guided setup checklist until one is."}
+                </p>
+              </div>
+            </div>
+            <Link to="/admin/milestones" className="shrink-0">
+              <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                {templates.length === 0 ? "Create Template" : "Manage Templates"}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Actions & Links */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card className="border-border bg-card">
@@ -35,13 +66,13 @@ const AdminDashboard = () => {
                 Projects
               </Button>
             </Link>
-            <Link to="/admin/contract" className="w-full ">
+            <Link to="/admin/templates" className="w-full ">
               <Button
                 variant="outline"
                 className="w-full border-border bg-transparent text-foreground hover:bg-muted"
               >
-                <Clock className="mr-2 h-4 w-4" />
-                Contract
+                <FileSignature className="mr-2 h-4 w-4" />
+                Templates
               </Button>
             </Link>
 
@@ -96,16 +127,6 @@ const AdminDashboard = () => {
               >
                 <Folder className="mr-2 h-4 w-4" />
                 Documents
-              </Button>
-            </Link>
-
-            <Link to="/admin/certificates" className="w-full ">
-              <Button
-                variant="outline"
-                className="w-full border-border bg-transparent text-foreground hover:bg-muted"
-              >
-                <Award className="mr-2 h-4 w-4" />
-                Certificates
               </Button>
             </Link>
 

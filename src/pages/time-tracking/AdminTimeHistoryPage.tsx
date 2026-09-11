@@ -22,6 +22,13 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import type { ITimeDataBase } from "@/types/time.type";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import PendingWorkingHoursRequests from "@/components/time-tracking/PendingWorkingHoursRequests";
+
+// Formats a Date as YYYY-MM-DD using its *local* calendar date, unlike
+// `.toISOString()` which converts to UTC first and can silently roll the
+// date back a day for timezones ahead of UTC (e.g. Nepal, UTC+5:45).
+const toDateString = (date: Date) => format(date, "yyyy-MM-dd");
 
 const formatDuration = (hoursInput: number) => {
   const hours = Math.floor(hoursInput);
@@ -55,15 +62,15 @@ const AdminTimeHistoryPage = () => {
     switch (dateFilter) {
       case "today":
         return {
-          startDate: today.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0]
+          startDate: toDateString(today),
+          endDate: toDateString(today)
         };
       case "yesterday":
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
         return {
-          startDate: yesterday.toISOString().split('T')[0],
-          endDate: yesterday.toISOString().split('T')[0]
+          startDate: toDateString(yesterday),
+          endDate: toDateString(yesterday)
         };
       case "thisWeek":
         const startOfWeek = new Date(today);
@@ -72,33 +79,33 @@ const AdminTimeHistoryPage = () => {
         const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, so 6 days back to Monday
         startOfWeek.setDate(today.getDate() - daysToMonday);
         return {
-          startDate: startOfWeek.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0]
+          startDate: toDateString(startOfWeek),
+          endDate: toDateString(today)
         };
       case "last7Days":
         const last7Days = new Date(today);
         last7Days.setDate(today.getDate() - 6); // 6 days ago + today = 7 days
         return {
-          startDate: last7Days.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0]
+          startDate: toDateString(last7Days),
+          endDate: toDateString(today)
         };
       case "thisMonth":
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         return {
-          startDate: startOfMonth.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0]
+          startDate: toDateString(startOfMonth),
+          endDate: toDateString(today)
         };
       case "last30Days":
         const last30Days = new Date(today);
         last30Days.setDate(today.getDate() - 29); // 29 days ago + today = 30 days
         return {
-          startDate: last30Days.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0]
+          startDate: toDateString(last30Days),
+          endDate: toDateString(today)
         };
       case "custom":
         return {
-          startDate: customStartDate ? customStartDate.toISOString().split('T')[0] : undefined,
-          endDate: customEndDate ? customEndDate.toISOString().split('T')[0] : undefined
+          startDate: customStartDate ? toDateString(customStartDate) : undefined,
+          endDate: customEndDate ? toDateString(customEndDate) : undefined
         };
       default:
         return {
@@ -137,8 +144,8 @@ const AdminTimeHistoryPage = () => {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-background p-6">
+        <div className="">
           <div className="animate-pulse">
             <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
             <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -150,10 +157,10 @@ const AdminTimeHistoryPage = () => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-background p-6">
+        <div className="">
           <div className="text-center py-8">
-            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <User className="w-12 h-12 text-gray-400 mb-4" />
             <p className="text-gray-600">User not found</p>
             <Link to="/users">
               <Button variant="outline" className="mt-4">
@@ -168,8 +175,8 @@ const AdminTimeHistoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="bg-background p-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Link to={`/admin/users/${userId}`}>
@@ -214,6 +221,9 @@ const AdminTimeHistoryPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Pending Working Hours Requests */}
+        <PendingWorkingHoursRequests userId={userData?._id} />
 
         {/* Time History Card */}
         <Card className="bg-card border-border">
@@ -309,7 +319,7 @@ const AdminTimeHistoryPage = () => {
                 renderSkeleton()
               ) : checkInHistory?.items?.length === 0 ? (
                 <div className="text-center py-8">
-                  <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <Clock className="w-12 h-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No time entries found</p>
                 </div>
               ) : (

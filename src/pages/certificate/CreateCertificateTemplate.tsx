@@ -92,11 +92,11 @@ const CreateCertificateTemplate = () => {
   };
 
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader
         title={isEdit ? "Edit Certificate Template" : "Create New Certificate Template"}
         description="Author the certificate content and position it on the letterhead"
-        link="/admin/certificates"
+        link="/admin/templates"
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">

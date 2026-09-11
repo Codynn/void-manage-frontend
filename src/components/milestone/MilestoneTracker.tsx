@@ -169,12 +169,12 @@ export function MilestoneTracker({ phases, isLoading, onUpdate }: MilestoneTrack
   const completedPhases = phases?.filter(phase => phase.isCompleted).length || 0;
 
   if (isLoading || checklistLoading) {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+    return <div className="flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="bg-background p-6">
+      <div className="space-y-6">
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Milestone Tracker</h1>

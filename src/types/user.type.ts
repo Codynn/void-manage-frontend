@@ -21,7 +21,7 @@ export interface IUserData {
   createdAt: string;
   updatedAt: string;
   achievements: string[];
-  currentPhase: string[];
+  currentPhase: { _id: string; name: string; order?: number; progress?: number; isCompleted?: boolean; status?: string }[];
   daysCompleted: number;
   duration: number;
   overallProgress: number;
@@ -30,4 +30,5 @@ export interface IUserData {
   welcomePhotos?: string[];
   assignedLeaves: IAssignedLeave[];
   archived?: boolean;
+  mustChangePassword?: boolean;
 }

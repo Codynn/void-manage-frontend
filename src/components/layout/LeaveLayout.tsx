@@ -4,7 +4,7 @@ import TitleHeader from './TitleHeader'
 
 const LeaveLayout = () => {
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <main className="p-6 space-y-6">
       <TitleHeader
         title="Leave Management"
         description="Manage leave requests for all employees"

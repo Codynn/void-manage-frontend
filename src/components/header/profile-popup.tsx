@@ -101,7 +101,9 @@ export function ProfilePopup({ user }: ProfilePopupProps) {
                       variant="outline"
                       className="border-border text-foreground"
                     >
-                      Phase {user?.currentPhase}
+                      {(user?.currentPhase as any[])?.find((p: any) => !p?.isCompleted)?.name ||
+                        (user?.currentPhase as any[])?.[0]?.name ||
+                        "Not started"}
                     </Badge>
                   </div>
                   <div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { IUserData,  } from "@/types/user.type";
 import {
   LEAVE_TYPE_LABELS,
@@ -31,6 +32,7 @@ interface UserEditSheetProps {
 }
 
 const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
+  const [open, setOpen] = useState(false);
   const { mutate: updateUser, isPending } = useUpdateUser();
 
   //   Only partial IUserData is needed for updates
@@ -58,10 +60,15 @@ const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
   const onSubmit = (data: Partial<IUserData>) => {
     if (isPending) return;
 
-    updateUser({
-      ...user,
-      ...data,
-    });
+    updateUser(
+      {
+        ...user,
+        ...data,
+      },
+      {
+        onSuccess: () => setOpen(false),
+      }
+    );
   };
 
   const addNewLeave = () => {
@@ -109,7 +116,7 @@ const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-[800px] flex flex-col h-full max-h-screen">
         <SheetHeader className="flex-shrink-0 pb-4 border-b">

@@ -13,6 +13,7 @@ import {
   Camera,
   UserCog,
   ClipboardCheck,
+  Building2,
 } from "lucide-react";
 
 export interface NavItem {
@@ -36,7 +37,10 @@ export const ADMIN_NAV: NavGroup[] = [
   },
   {
     label: "People",
-    items: [{ label: "Users", href: "/admin/users", icon: Users }],
+    items: [
+      { label: "Users", href: "/admin/users", icon: Users },
+      { label: "Departments", href: "/admin/departments", icon: Building2 },
+    ],
   },
   {
     label: "Work",

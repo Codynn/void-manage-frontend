@@ -1,0 +1,160 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import API from "../axiosInstance";
+import type { IDepartment, IDepartmentRole } from "@/types/department.type";
+
+// ------- Departments -------
+
+export const useGetDepartments = () => {
+  return useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const response = await API.get("/departments", { params: { limit: 100 } });
+      return (response?.data?.data?.items || []) as IDepartment[];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useGetDepartmentById = (id?: string) => {
+  return useQuery({
+    queryKey: ["department", id],
+    queryFn: async () => {
+      const response = await API.get(`/departments/${id}`);
+      return response?.data?.data as IDepartment;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useCreateDepartment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { name: string; description?: string }) => {
+      const response = await API.post("/departments", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Department created successfully");
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to create department");
+    },
+  });
+};
+
+export const useUpdateDepartment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; name?: string; description?: string }) => {
+      const response = await API.patch(`/departments/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Department updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update department");
+    },
+  });
+};
+
+export const useDeleteDepartment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await API.delete(`/departments/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Department archived");
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to archive department");
+    },
+  });
+};
+
+// ------- Department Roles -------
+
+export const useGetDepartmentRoles = (departmentId?: string) => {
+  return useQuery({
+    queryKey: ["departmentRoles", departmentId],
+    queryFn: async () => {
+      const response = await API.get("/department-roles", {
+        params: departmentId ? { department: departmentId } : undefined,
+      });
+      return (response?.data?.data || []) as IDepartmentRole[];
+    },
+    enabled: departmentId !== undefined,
+  });
+};
+
+export const useCreateDepartmentRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      department: string;
+      title: string;
+      description?: string;
+      contractTemplate?: string | null;
+      phaseTemplate?: string | null;
+    }) => {
+      const response = await API.post("/department-roles", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Role created successfully");
+      queryClient.invalidateQueries({ queryKey: ["departmentRoles"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to create role");
+    },
+  });
+};
+
+export const useUpdateDepartmentRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: {
+      id: string;
+      title?: string;
+      description?: string;
+      contractTemplate?: string | null;
+      phaseTemplate?: string | null;
+    }) => {
+      const response = await API.patch(`/department-roles/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Role updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["departmentRoles"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update role");
+    },
+  });
+};
+
+export const useDeleteDepartmentRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await API.delete(`/department-roles/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Role archived");
+      queryClient.invalidateQueries({ queryKey: ["departmentRoles"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to archive role");
+    },
+  });
+};

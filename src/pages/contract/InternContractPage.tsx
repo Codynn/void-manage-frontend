@@ -201,8 +201,8 @@ const InternContractPage = () => {
           <div className={!isApproved && contractStatus !== "pending" ? "select-none" : undefined}>
             <ContractDocumentPreview
               ref={previewRef}
-              content={contractTemplate?.content ?? null}
-              layout={contractTemplate?.layout}
+              content={contractInstance?.contentOverride ?? contractTemplate?.content ?? null}
+              layout={contractInstance?.layoutOverride ?? contractTemplate?.layout}
               mode="fill"
               values={placeholderValues}
               watermark={!isApproved && contractStatus !== "pending"}

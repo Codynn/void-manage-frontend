@@ -34,6 +34,8 @@ import EditTaskPage from "./pages/milestone/EditTaskPage.tsx";
 import AssignTaskPage from "@/pages/milestone/AssignTaskPage";
 import MentorIndividualAssignment from "./pages/milestone/MentorIndividualAssignment.tsx";
 import AdminTimesheetPage from "./pages/time-tracking/AdminTimesheetPage.tsx";
+import DepartmentsPage from "./pages/department/DepartmentsPage.tsx";
+import DepartmentDetailPage from "./pages/department/DepartmentDetailPage.tsx";
 import AdminWorkingHoursRequestsPage from "./pages/time-tracking/AdminWorkingHoursRequestsPage.tsx";
 import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
@@ -128,6 +130,19 @@ const router = createBrowserRouter([
               {
                 path: ":userId",
                 element: <UserViewPage />,
+              },
+            ],
+          },
+          {
+            path: "departments",
+            children: [
+              {
+                path: "",
+                element: <DepartmentsPage />,
+              },
+              {
+                path: ":departmentId",
+                element: <DepartmentDetailPage />,
               },
             ],
           },

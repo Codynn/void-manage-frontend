@@ -13,11 +13,14 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { Plus, Trash2, GripVertical, Save, ArrowLeft, Sparkles } from "lucide-react";
 import type { TPhaseTemplateForm, IPhase } from "@/types/milestone.type";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const CreateTemplatePage = () => {
   const navigate = useNavigate();
   const { templateId } = useParams();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  const goBack = () => navigate(returnTo || "/admin/milestones/templates");
   const isEditMode = !!templateId;
 
   const [draggedPhaseIndex, setDraggedPhaseIndex] = useState<number | null>(null);
@@ -95,14 +98,14 @@ const CreateTemplatePage = () => {
         { id: templateId!, data: orderedData },
         {
           onSuccess: () => {
-            navigate("/admin/milestones/templates");
+            goBack();
           },
         }
       );
     } else {
       createTemplate(orderedData, {
         onSuccess: () => {
-          navigate("/admin/milestones/templates");
+          goBack();
         },
       });
     }
@@ -231,7 +234,7 @@ const CreateTemplatePage = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate("/admin/milestones/templates")}
+            onClick={() => goBack()}
           >
             Cancel
           </Button>

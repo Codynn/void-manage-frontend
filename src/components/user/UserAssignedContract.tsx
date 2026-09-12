@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { JSONContent } from "@tiptap/react";
 import {
   Card,
   CardContent,
@@ -8,17 +9,19 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Clock, CheckCircle, Plus, Eye, ShieldCheck, XCircle } from "lucide-react";
+import { FileText, Clock, CheckCircle, Plus, Eye, ShieldCheck, XCircle, Pencil } from "lucide-react";
 import type { IUserData } from "@/types/user.type";
 import { AssignContractDialog } from "./AssignContractDialog";
 import {
   useApproveContract,
   useGetAssignedContractsByUserId,
   useRejectContract,
+  useUpdateContractInstanceContent,
 } from "@/services/api/contract.api";
 import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
+import ContractRichTextEditor from "@/components/contract/ContractRichTextEditor";
 
 interface UserAssignedContractProps {
   userData: IUserData;
@@ -33,6 +36,8 @@ export const UserAssignedContract = ({
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectMessage, setRejectMessage] = useState("");
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editContent, setEditContent] = useState<JSONContent | null>(null);
 
   // Fetch this user's assigned contract
   const { data: assignedContractData } = useGetAssignedContractsByUserId(userData._id);
@@ -40,6 +45,25 @@ export const UserAssignedContract = ({
   const assignedContract = assignedContractData?.[0];
   const { mutate: approveContract, isPending: isApproving } = useApproveContract();
   const { mutate: rejectContract, isPending: isRejecting } = useRejectContract();
+  const { mutate: updateContent, isPending: isSavingContent } = useUpdateContractInstanceContent();
+
+  const canEditContent =
+    currentUserRole === "ADMIN" &&
+    (assignedContract?.status === "pending" || assignedContract?.status === "rejected");
+
+  const openEditDialog = () => {
+    if (!assignedContract) return;
+    setEditContent(assignedContract.contentOverride ?? assignedContract.model?.content ?? null);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveContent = () => {
+    if (!assignedContract || !editContent) return;
+    updateContent(
+      { instanceId: assignedContract._id, content: editContent },
+      { onSuccess: () => setShowEditDialog(false) }
+    );
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -175,6 +199,17 @@ export const UserAssignedContract = ({
                   <Eye className="w-3 h-3" />
                   View Contract
                 </Button>
+                {canEditContent && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-2 text-xs"
+                    onClick={openEditDialog}
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Edit Content
+                  </Button>
+                )}
                 {currentUserRole === "ADMIN" && assignedContract.status === "signed" && (
                   <>
                     <Button
@@ -223,8 +258,8 @@ export const UserAssignedContract = ({
               <DialogTitle>{assignedContract.model?.title}</DialogTitle>
             </DialogHeader>
             <ContractDocumentPreview
-              content={assignedContract.model?.content ?? null}
-              layout={assignedContract.model?.layout}
+              content={assignedContract.contentOverride ?? assignedContract.model?.content ?? null}
+              layout={assignedContract.layoutOverride ?? assignedContract.model?.layout}
               mode="fill"
               watermark={assignedContract.status !== "approved"}
               values={{
@@ -270,6 +305,31 @@ export const UserAssignedContract = ({
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {assignedContract && (
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Contract Content - {userData.username}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Changes only apply to this intern's contract, not the shared template. Only
+              possible before they sign.
+            </p>
+            {editContent && (
+              <ContractRichTextEditor content={editContent} onChange={setEditContent} />
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveContent} disabled={isSavingContent}>
+                {isSavingContent ? "Saving..." : "Save Content"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}

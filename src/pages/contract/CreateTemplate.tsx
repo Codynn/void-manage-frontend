@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import type { JSONContent } from "@tiptap/react";
 import TitleHeader from "@/components/layout/TitleHeader";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,9 @@ const EMPTY_CONTENT: JSONContent = { type: "doc", content: [{ type: "paragraph" 
 
 const CreateTemplate = () => {
   const params = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const isEdit = !!params.id;
 
   const [content, setContent] = useState<JSONContent>(EMPTY_CONTENT);
@@ -64,6 +67,10 @@ const CreateTemplate = () => {
       { ...data, content, layout },
       {
         onSuccess: () => {
+          if (returnTo) {
+            navigate(returnTo);
+            return;
+          }
           reset();
           setContent(EMPTY_CONTENT);
           setLayout(DEFAULT_CONTRACT_LAYOUT);

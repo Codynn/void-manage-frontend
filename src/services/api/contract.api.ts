@@ -152,6 +152,34 @@ export const useApproveContract = () => {
   });
 };
 
+export const useUpdateContractInstanceContent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      instanceId,
+      content,
+      layout,
+    }: {
+      instanceId: string;
+      content?: any;
+      layout?: any;
+    }) => {
+      const response = await API.patch(`/contracts/instance/${instanceId}/content`, {
+        content,
+        layout,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Contract content updated");
+      queryClient.invalidateQueries({ queryKey: ["assignedContract"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update contract content");
+    },
+  });
+};
+
 export const useRejectContract = () => {
   const queryClient = useQueryClient();
   return useMutation({

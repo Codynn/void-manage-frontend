@@ -61,6 +61,7 @@ export const useCreateUser = () => {
       department?: string;
       designation?: string;
       displayOrder?: number;
+      departmentRoleId?: string;
     }) => {
       const response = await API.post("/users/createuser", userData);
       return response.data;

@@ -29,5 +29,7 @@ export interface IContractInstance {
   rejectionMessage?: string;
   signatureFileUrl?: { url: string; file: string };
   placeholderValues: Record<string, string | undefined>;
+  contentOverride?: JSONContent | null;
+  layoutOverride?: ContractLayout | null;
   createdAt: string;
 }

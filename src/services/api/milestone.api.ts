@@ -275,3 +275,18 @@ export const useUpdatePhase = () => {
     }
   })
 }
+export const useBulkAssignPhaseTemplate = () => {
+  return useMutation({
+    mutationFn: async ({ templateId, userIds }: { templateId: string; userIds: string[] }) => {
+      const response = await API.post(`/phasestemp/${templateId}/bulk-assign`, { userIds });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      const { assigned, skipped } = data?.data || { assigned: [], skipped: [] };
+      toast.success(`Applied to ${assigned.length} intern(s)${skipped.length ? `, skipped ${skipped.length}` : ""}`);
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to bulk-apply template");
+    },
+  });
+};

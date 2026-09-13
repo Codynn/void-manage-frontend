@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, GripVertical, Save, ArrowLeft, Sparkles } from "lucide-react";
 import type { TPhaseTemplateForm, IPhase } from "@/types/milestone.type";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import BulkApplyTemplateCard from "@/components/milestone/BulkApplyTemplateCard";
 
 const CreateTemplatePage = () => {
   const navigate = useNavigate();
@@ -202,6 +203,8 @@ const CreateTemplatePage = () => {
             />
           </CardContent>
         </Card>
+
+        {isEditMode && templateId && <BulkApplyTemplateCard templateId={templateId} />}
 
         {/* Phases */}
         <div className="space-y-4">

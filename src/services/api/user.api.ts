@@ -10,6 +10,7 @@ export const useGetUserData = () => {
     queryKey: ["userData"],
     queryFn: async () => {
       const response = await API.get("/users/currentUser");
+      console.log("response in useGetUserData:", response);
       return response?.data?.data || {};
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -32,6 +33,23 @@ export const useGetUsers = () => {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
+  });
+};
+
+export const useGetUsersByFilter = (filters: {
+  department?: string;
+  role?: string;
+}) => {
+  return useQuery({
+    queryKey: ["users", "filtered", filters],
+    queryFn: async () => {
+      const response = await API.get("/users/allusers", {
+        params: { all: true, limit: 1000, ...filters },
+      });
+      return response?.data?.data?.items || [];
+    },
+    enabled: !!filters.department,
+    staleTime: 1000 * 60,
   });
 };
 
@@ -61,7 +79,6 @@ export const useCreateUser = () => {
       department?: string;
       designation?: string;
       displayOrder?: number;
-      departmentRoleId?: string;
     }) => {
       const response = await API.post("/users/createuser", userData);
       return response.data;
@@ -80,7 +97,9 @@ export const useResetUserPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Password reset - the user has been emailed their new temporary password");
+      toast.success(
+        "Password reset - the user has been emailed their new temporary password",
+      );
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to reset password");
@@ -90,12 +109,17 @@ export const useResetUserPassword = () => {
 
 export const useChangePassword = () => {
   return useMutation({
-    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+    mutationFn: async (data: {
+      currentPassword: string;
+      newPassword: string;
+    }) => {
       const response = await API.post("/users/change-password", data);
       return response.data;
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to change password");
+      toast.error(
+        error?.response?.data?.message || "Failed to change password",
+      );
     },
   });
 };
@@ -180,7 +204,10 @@ export const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: async (userData: Partial<IUserData>) => {
-      const response = await API.put(`/users/updateUser/${userData._id}`, userData);
+      const response = await API.put(
+        `/users/updateUser/${userData._id}`,
+        userData,
+      );
       return response.data;
     },
     onSuccess: (_, variables) => {
@@ -207,7 +234,9 @@ export const useAddWelcomePhotos = () => {
       queryClient.invalidateQueries({ queryKey: ["userData"] });
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to add welcome photos");
+      toast.error(
+        error?.response?.data?.message || "Failed to add welcome photos",
+      );
     },
   });
 };
@@ -216,7 +245,9 @@ export const useRemoveWelcomePhoto = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (url: string) => {
-      const response = await API.delete(`/users/welcome-photos`, { data: { url } });
+      const response = await API.delete(`/users/welcome-photos`, {
+        data: { url },
+      });
       return response.data;
     },
     onSuccess: () => {

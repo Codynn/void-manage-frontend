@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Plus, LoaderCircle } from "lucide-react";
 import { useCreateUser } from "@/services/api/user.api";
-import { useGetDepartments, useGetDepartmentRoles } from "@/services/api/department.api";
+import { useGetDepartments } from "@/services/api/department.api";
 
 const NONE = "__none__";
 
@@ -27,13 +27,9 @@ const AddUserDialog = () => {
     role: "INTERN"
   });
   const [departmentId, setDepartmentId] = useState<string>(NONE);
-  const [departmentRoleId, setDepartmentRoleId] = useState<string>(NONE);
 
   const createUserMutation = useCreateUser();
   const { data: departments } = useGetDepartments();
-  const { data: departmentRoles } = useGetDepartmentRoles(
-    departmentId !== NONE ? departmentId : undefined
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +43,7 @@ const AddUserDialog = () => {
     try {
       await createUserMutation.mutateAsync({
         ...formData,
-        departmentRoleId: departmentRoleId !== NONE ? departmentRoleId : undefined,
+        department: departmentId !== NONE ? departmentId : undefined,
       });
       setOpen(false);
       setFormData({
@@ -56,7 +52,6 @@ const AddUserDialog = () => {
         role: "INTERN"
       });
       setDepartmentId(NONE);
-      setDepartmentRoleId(NONE);
     } catch (error: any) {
       setError(error.response?.data?.message || "Failed to create user");
     }
@@ -134,13 +129,7 @@ const AddUserDialog = () => {
 
           <div className="space-y-2">
             <Label>Department</Label>
-            <Select
-              value={departmentId}
-              onValueChange={(value) => {
-                setDepartmentId(value);
-                setDepartmentRoleId(NONE);
-              }}
-            >
+            <Select value={departmentId} onValueChange={setDepartmentId}>
               <SelectTrigger>
                 <SelectValue placeholder="None" />
               </SelectTrigger>
@@ -153,29 +142,11 @@ const AddUserDialog = () => {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              If the department has a contract/phase template set up for this role, it's
+              auto-assigned on creation.
+            </p>
           </div>
-
-          {departmentId !== NONE && (
-            <div className="space-y-2">
-              <Label>Department Role</Label>
-              <Select value={departmentRoleId} onValueChange={setDepartmentRoleId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>None</SelectItem>
-                  {departmentRoles?.map((r) => (
-                    <SelectItem key={r._id} value={r._id}>
-                      {r.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Auto-assigns the role's contract and phase template on creation.
-              </p>
-            </div>
-          )}
 
           <DialogFooter>
             <Button

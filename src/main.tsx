@@ -36,6 +36,7 @@ import MentorIndividualAssignment from "./pages/milestone/MentorIndividualAssign
 import AdminTimesheetPage from "./pages/time-tracking/AdminTimesheetPage.tsx";
 import DepartmentsPage from "./pages/department/DepartmentsPage.tsx";
 import DepartmentDetailPage from "./pages/department/DepartmentDetailPage.tsx";
+import MarksPage from "./pages/marks/MarksPage.tsx";
 import AdminWorkingHoursRequestsPage from "./pages/time-tracking/AdminWorkingHoursRequestsPage.tsx";
 import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
@@ -154,6 +155,10 @@ const router = createBrowserRouter([
           {
             path: "working-hours-requests",
             element: <AdminWorkingHoursRequestsPage />,
+          },
+          {
+            path: "marks",
+            element: <MarksPage />,
           },
           {
             path: "milestones",
@@ -289,6 +294,10 @@ const router = createBrowserRouter([
             path: "individual-assignment",
             element: <MentorIndividualAssignment />,
           },
+          {
+            path: "marks",
+            element: <MarksPage />,
+          },
         ],
       },
     ],
@@ -298,5 +307,5 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>
+  </StrictMode>,
 );

@@ -9,7 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { useGetUserData } from "@/services/api/user.api";
 import AppSidebar from "./AppSidebar";
 import ChangePasswordGate from "./ChangePasswordGate";
@@ -45,6 +49,7 @@ const useCurrentSectionLabel = (role?: string) => {
 
 const DashboardLayout = ({ allowedRoles }: DashboardLayoutProps) => {
   const { data: userData, isLoading, error } = useGetUserData();
+  console.log("userData in DashboardLayout:", userData);
   const sectionLabel = useCurrentSectionLabel(userData?.role);
 
   if (isLoading) {
@@ -52,7 +57,9 @@ const DashboardLayout = ({ allowedRoles }: DashboardLayoutProps) => {
       <div className="flex h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center">
           <LoaderCircle className="h-16 w-16 animate-spin text-primary" />
-          <p className="mt-4 text-xl text-muted-foreground">Loading, please wait...</p>
+          <p className="mt-4 text-xl text-muted-foreground">
+            Loading, please wait...
+          </p>
         </div>
       </div>
     );
@@ -80,7 +87,9 @@ const DashboardLayout = ({ allowedRoles }: DashboardLayoutProps) => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href={ROLE_HOME[userData.role]}>Home</BreadcrumbLink>
+                <BreadcrumbLink href={ROLE_HOME[userData.role]}>
+                  Home
+                </BreadcrumbLink>
               </BreadcrumbItem>
               {sectionLabel && (
                 <>

@@ -157,16 +157,13 @@ export const useUpdateContractInstanceContent = () => {
   return useMutation({
     mutationFn: async ({
       instanceId,
-      content,
-      layout,
+      pages,
     }: {
       instanceId: string;
-      content?: any;
-      layout?: any;
+      pages?: any;
     }) => {
       const response = await API.patch(`/contracts/instance/${instanceId}/content`, {
-        content,
-        layout,
+        pages,
       });
       return response.data;
     },

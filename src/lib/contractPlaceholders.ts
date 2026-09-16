@@ -11,6 +11,7 @@ export interface PlaceholderDef {
 export const CONTRACT_PLACEHOLDERS: PlaceholderDef[] = [
   { key: "username", label: "Username", kind: "text", auto: true },
   { key: "userEmail", label: "User Email", kind: "text", auto: true },
+  { key: "department", label: "Department", kind: "text", auto: true },
   { key: "startDate", label: "Start Date", kind: "date", auto: false },
   { key: "endDate", label: "End Date", kind: "date", auto: false },
   { key: "signatureImage", label: "Signature Image", kind: "image", auto: true },
@@ -45,5 +46,17 @@ export const extractPlaceholderKeys = (doc: unknown): string[] => {
   };
 
   walk(doc);
+  return Array.from(keys);
+};
+
+// Same as extractPlaceholderKeys, but across every page of a multi-page
+// contract template (pages: [{ content, layout }]).
+export const extractPlaceholderKeysFromPages = (
+  pages: { content: unknown }[] | undefined
+): string[] => {
+  const keys = new Set<string>();
+  (pages || []).forEach((page) => {
+    extractPlaceholderKeys(page.content).forEach((k) => keys.add(k));
+  });
   return Array.from(keys);
 };

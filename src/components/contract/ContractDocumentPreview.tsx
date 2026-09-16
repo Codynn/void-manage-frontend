@@ -2,6 +2,7 @@ import { forwardRef, useEffect } from "react";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { PlaceholderNode } from "./tiptap/placeholderNode";
+import { FontSize } from "./tiptap/fontSizeMark";
 import LetterheadCanvas, {
   DEFAULT_CONTRACT_LAYOUT,
   type ContractLayout,
@@ -40,7 +41,7 @@ const ContractDocumentPreview = forwardRef<HTMLDivElement, Props>(
     ref
   ) => {
     const editor = useEditor({
-      extensions: [StarterKit, PlaceholderNode],
+      extensions: [StarterKit, PlaceholderNode, FontSize],
       content: content || "",
       editable: false,
     });

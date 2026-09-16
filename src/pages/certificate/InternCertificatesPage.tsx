@@ -116,6 +116,10 @@ const InternCertificatesPage = () => {
                     values={{
                       username: profileData?.username,
                       userEmail: profileData?.email,
+                      department:
+                        typeof profileData?.department === "string"
+                          ? undefined
+                          : profileData?.department?.name,
                       ...activeCertificate.placeholderValues,
                     }}
                   />

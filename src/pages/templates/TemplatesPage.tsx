@@ -22,6 +22,7 @@ import {
   useDeleteCertificateTemplate,
 } from "@/services/api/certificate.api";
 import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
+import ContractPagesPreview from "@/components/contract/ContractPagesPreview";
 import type { JSONContent } from "@tiptap/react";
 import type { ContractLayout } from "@/components/contract/LetterheadCanvas";
 
@@ -31,8 +32,10 @@ interface UnifiedTemplate {
   _id: string;
   title: string;
   companyName: string;
-  content: JSONContent;
-  layout: ContractLayout;
+  // Contracts are multi-page; certificates are single-page.
+  pages?: { content: JSONContent; layout: ContractLayout }[];
+  content?: JSONContent;
+  layout?: ContractLayout;
   createdAt: string;
   createdBy?: { username?: string };
 }
@@ -185,13 +188,15 @@ const TemplatesPage = () => {
                         <DialogHeader>
                           <DialogTitle>{selectedTemplate?.title}</DialogTitle>
                         </DialogHeader>
-                        {selectedTemplate && (
+                        {selectedTemplate && selectedTemplate.pages ? (
+                          <ContractPagesPreview pages={selectedTemplate.pages} mode="template" />
+                        ) : selectedTemplate ? (
                           <ContractDocumentPreview
-                            content={selectedTemplate.content}
+                            content={selectedTemplate.content ?? null}
                             layout={selectedTemplate.layout}
                             mode="template"
                           />
-                        )}
+                        ) : null}
                       </DialogContent>
                     </Dialog>
 

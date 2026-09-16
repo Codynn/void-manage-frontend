@@ -21,7 +21,7 @@ import { FileText, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   MANUAL_PLACEHOLDERS,
-  extractPlaceholderKeys,
+  extractPlaceholderKeysFromPages,
 } from "@/lib/contractPlaceholders";
 
 interface AssignContractDialogProps {
@@ -49,7 +49,7 @@ export const AssignContractDialog = ({
 
   const requiredPlaceholders = useMemo(() => {
     if (!selectedContract) return [];
-    const keysInContent = extractPlaceholderKeys(selectedContract.content);
+    const keysInContent = extractPlaceholderKeysFromPages(selectedContract.pages);
     return MANUAL_PLACEHOLDERS.filter((p) => keysInContent.includes(p.key));
   }, [selectedContract]);
 

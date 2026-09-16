@@ -84,17 +84,20 @@ export const useUpdateDepartmentRoleTemplate = () => {
       role,
       contractTemplate,
       phaseTemplate,
+      leavePolicy,
     }: {
       departmentId: string;
       role: SystemRole;
       contractTemplate?: string | null;
       phaseTemplate?: string | null;
+      leavePolicy?: string | null;
     }) => {
-      const response = await API.patch(`/departments/${departmentId}/role-template`, {
-        role,
-        contractTemplate,
-        phaseTemplate,
-      });
+      const payload: Record<string, unknown> = { role };
+      if (contractTemplate !== undefined) payload.contractTemplate = contractTemplate;
+      if (phaseTemplate !== undefined) payload.phaseTemplate = phaseTemplate;
+      if (leavePolicy !== undefined) payload.leavePolicy = leavePolicy;
+
+      const response = await API.patch(`/departments/${departmentId}/role-template`, payload);
       return response.data;
     },
     onSuccess: (_, variables) => {

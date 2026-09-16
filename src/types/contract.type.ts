@@ -2,12 +2,16 @@ import type { JSONContent } from "@tiptap/react";
 import type { IUserData } from "./user.type";
 import type { ContractLayout } from "@/components/contract/LetterheadCanvas";
 
+export interface IContractPage {
+  content: JSONContent;
+  layout: ContractLayout;
+}
+
 export interface IContractTemplateBase {
   _id: string;
   title: string;
   companyName: string;
-  content: JSONContent;
-  layout: ContractLayout;
+  pages: IContractPage[];
   createdAt: string;
   createdBy: IUserData;
 }
@@ -29,7 +33,6 @@ export interface IContractInstance {
   rejectionMessage?: string;
   signatureFileUrl?: { url: string; file: string };
   placeholderValues: Record<string, string | undefined>;
-  contentOverride?: JSONContent | null;
-  layoutOverride?: ContractLayout | null;
+  pagesOverride?: IContractPage[] | null;
   createdAt: string;
 }

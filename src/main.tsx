@@ -36,12 +36,14 @@ import MentorIndividualAssignment from "./pages/milestone/MentorIndividualAssign
 import AdminTimesheetPage from "./pages/time-tracking/AdminTimesheetPage.tsx";
 import DepartmentsPage from "./pages/department/DepartmentsPage.tsx";
 import DepartmentDetailPage from "./pages/department/DepartmentDetailPage.tsx";
+import RoleTemplatesMatrixPage from "./pages/department/RoleTemplatesMatrixPage.tsx";
 import MarksPage from "./pages/marks/MarksPage.tsx";
 import AdminWorkingHoursRequestsPage from "./pages/time-tracking/AdminWorkingHoursRequestsPage.tsx";
 import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
 import InternCertificatesPage from "./pages/certificate/InternCertificatesPage.tsx";
 import TemplatesPage from "./pages/templates/TemplatesPage.tsx";
+import LeavePoliciesPage from "./pages/leave/LeavePoliciesPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -107,6 +109,14 @@ const router = createBrowserRouter([
           {
             path: "templates",
             element: <TemplatesPage />,
+          },
+          {
+            path: "leave-policies",
+            element: <LeavePoliciesPage />,
+          },
+          {
+            path: "role-templates",
+            element: <RoleTemplatesMatrixPage />,
           },
           {
             path: "contract",

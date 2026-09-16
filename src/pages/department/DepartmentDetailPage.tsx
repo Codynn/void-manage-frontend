@@ -1,25 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import TitleHeader from "@/components/layout/TitleHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Users, ShieldCheck, GraduationCap, FileSignature, ListChecks } from "lucide-react";
+import SelectWithCreate, { NONE_SENTINEL as NONE } from "@/components/common/SelectWithCreate";
+import { Users, ShieldCheck, GraduationCap, FileSignature, ListChecks, CalendarDays } from "lucide-react";
 import {
   useGetDepartmentById,
   useUpdateDepartmentRoleTemplate,
 } from "@/services/api/department.api";
 import { useGetContractTemplates } from "@/services/api/contract.api";
 import { useGetPhaseTemplates } from "@/services/api/milestone.api";
+import { useGetLeavePolicies } from "@/services/api/leavePolicy.api";
 import type { SystemRole } from "@/types/department.type";
-
-const NONE = "__none__";
 
 const ROLE_META: Record<SystemRole, { label: string; icon: typeof Users }> = {
   INTERN: { label: "Intern", icon: GraduationCap },
@@ -34,36 +27,48 @@ const RoleTemplateCard = ({
   role,
   currentContractId,
   currentPhaseId,
+  currentLeavePolicyId,
 }: {
   departmentId: string;
   role: SystemRole;
   currentContractId: string;
   currentPhaseId: string;
+  currentLeavePolicyId: string;
 }) => {
+  const navigate = useNavigate();
   const { data: contractTemplates } = useGetContractTemplates();
   const { data: phaseTemplates } = useGetPhaseTemplates();
+  const { data: leavePolicies } = useGetLeavePolicies();
   const { mutate: updateRoleTemplate, isPending } = useUpdateDepartmentRoleTemplate();
 
   const [contractTemplate, setContractTemplate] = useState(currentContractId);
   const [phaseTemplate, setPhaseTemplate] = useState(currentPhaseId);
+  const [leavePolicy, setLeavePolicy] = useState(currentLeavePolicyId);
 
   useEffect(() => setContractTemplate(currentContractId), [currentContractId]);
   useEffect(() => setPhaseTemplate(currentPhaseId), [currentPhaseId]);
+  useEffect(() => setLeavePolicy(currentLeavePolicyId), [currentLeavePolicyId]);
 
   const Icon = ROLE_META[role].icon;
 
-  const handleChange = (field: "contractTemplate" | "phaseTemplate", value: string) => {
+  const handleChange = (
+    field: "contractTemplate" | "phaseTemplate" | "leavePolicy",
+    value: string
+  ) => {
     const nextContractTemplate = field === "contractTemplate" ? value : contractTemplate;
     const nextPhaseTemplate = field === "phaseTemplate" ? value : phaseTemplate;
+    const nextLeavePolicy = field === "leavePolicy" ? value : leavePolicy;
 
     setContractTemplate(nextContractTemplate);
     setPhaseTemplate(nextPhaseTemplate);
+    setLeavePolicy(nextLeavePolicy);
 
     updateRoleTemplate({
       departmentId,
       role,
       contractTemplate: nextContractTemplate === NONE ? null : nextContractTemplate,
       phaseTemplate: nextPhaseTemplate === NONE ? null : nextPhaseTemplate,
+      leavePolicy: nextLeavePolicy === NONE ? null : nextLeavePolicy,
     });
   };
 
@@ -85,23 +90,14 @@ const RoleTemplateCard = ({
             <FileSignature className="h-3.5 w-3.5" />
             Contract Template
           </div>
-          <Select
+          <SelectWithCreate
             value={contractTemplate}
-            onValueChange={(v) => handleChange("contractTemplate", v)}
+            onChange={(v) => handleChange("contractTemplate", v)}
+            items={(contractTemplates?.items || []).map((c: any) => ({ _id: c._id, label: c.title }))}
+            createLabel="Create new contract template"
+            onCreate={() => navigate("/admin/contract/create")}
             disabled={isPending}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="None" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>None</SelectItem>
-              {contractTemplates?.items?.map((c: any) => (
-                <SelectItem key={c._id} value={c._id}>
-                  {c.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -109,23 +105,29 @@ const RoleTemplateCard = ({
             <ListChecks className="h-3.5 w-3.5" />
             Phase Template
           </div>
-          <Select
+          <SelectWithCreate
             value={phaseTemplate}
-            onValueChange={(v) => handleChange("phaseTemplate", v)}
+            onChange={(v) => handleChange("phaseTemplate", v)}
+            items={(phaseTemplates || []).map((p: any) => ({ _id: p._id, label: p.name }))}
+            createLabel="Create new phase template"
+            onCreate={() => navigate("/admin/milestones/create-template")}
             disabled={isPending}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="None" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>None</SelectItem>
-              {phaseTemplates?.map((p: any) => (
-                <SelectItem key={p._id} value={p._id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <CalendarDays className="h-3.5 w-3.5" />
+            Leave Policy
+          </div>
+          <SelectWithCreate
+            value={leavePolicy}
+            onChange={(v) => handleChange("leavePolicy", v)}
+            items={(leavePolicies || []).map((p) => ({ _id: p._id, label: p.name }))}
+            createLabel="Create new leave policy"
+            onCreate={() => navigate("/admin/leave-policies")}
+            disabled={isPending}
+          />
         </div>
       </CardContent>
     </Card>
@@ -156,8 +158,16 @@ const DepartmentDetailPage = () => {
         Roles come from the system's Admin / Mentor / Intern roles. Manage templates on the{" "}
         <Link to="/admin/templates" className="text-primary hover:underline">
           Templates page
+        </Link>{" "}
+        and leave policies on the{" "}
+        <Link to="/admin/leave-policies" className="text-primary hover:underline">
+          Leave Policies page
         </Link>
-        , then attach them here.
+        , then attach them here. Configuring many departments at once? Use the{" "}
+        <Link to="/admin/role-templates" className="text-primary hover:underline">
+          Role Templates matrix
+        </Link>{" "}
+        instead.
       </p>
 
       {departmentId && (
@@ -171,6 +181,7 @@ const DepartmentDetailPage = () => {
                 role={role}
                 currentContractId={templateIdOf(mapping?.contractTemplate)}
                 currentPhaseId={templateIdOf(mapping?.phaseTemplate)}
+                currentLeavePolicyId={templateIdOf(mapping?.leavePolicy)}
               />
             );
           })}

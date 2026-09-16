@@ -4,6 +4,7 @@ export interface IRoleTemplate {
   role: SystemRole;
   contractTemplate?: { _id: string; title: string; companyName: string } | string | null;
   phaseTemplate?: { _id: string; name: string } | string | null;
+  leavePolicy?: { _id: string; name: string } | string | null;
 }
 
 export interface IDepartment {

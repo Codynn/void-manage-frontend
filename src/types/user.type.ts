@@ -31,4 +31,5 @@ export interface IUserData {
   assignedLeaves: IAssignedLeave[];
   archived?: boolean;
   mustChangePassword?: boolean;
+  department?: { _id: string; name: string } | string | null;
 }

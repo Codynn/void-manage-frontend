@@ -29,14 +29,30 @@ export const exportNodeAsPng = async (node: HTMLElement, filename: string) => {
 };
 
 export const exportNodeAsPdf = async (node: HTMLElement, filename: string) => {
-  const canvas = await captureCanvas(node);
-  const imgData = canvas.toDataURL("image/png");
+  await exportNodesAsPdf([node], filename);
+};
 
-  // A4 in mm
+// Multi-page contracts: each node becomes its own A4 page in one PDF.
+export const exportNodesAsPdf = async (nodes: HTMLElement[], filename: string) => {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+  for (let i = 0; i < nodes.length; i++) {
+    const canvas = await captureCanvas(nodes[i]);
+    const imgData = canvas.toDataURL("image/png");
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+  }
+
   pdf.save(filename);
+};
+
+// Multi-page contracts: downloads one PNG per page, numbered in the filename.
+export const exportNodesAsPng = async (nodes: HTMLElement[], filenameBase: string) => {
+  for (let i = 0; i < nodes.length; i++) {
+    const canvas = await captureCanvas(nodes[i]);
+    const suffix = nodes.length > 1 ? `-page-${i + 1}` : "";
+    downloadDataUrl(canvas.toDataURL("image/png"), filenameBase.replace(/\.png$/, `${suffix}.png`));
+  }
 };

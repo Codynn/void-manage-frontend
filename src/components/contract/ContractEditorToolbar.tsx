@@ -6,8 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bold, Italic, Heading2, List, ImagePlus, AtSign } from "lucide-react";
+import { Bold, Italic, Heading2, List, ImagePlus, AtSign, CaseSensitive } from "lucide-react";
 import { IMAGE_PLACEHOLDERS, MANUAL_PLACEHOLDERS } from "@/lib/contractPlaceholders";
+
+const FONT_SIZES = ["10px", "12px", "13px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
 
 const ToolbarButton = ({
   active,
@@ -65,6 +67,30 @@ const ContractEditorToolbar = ({ editor }: { editor: Editor | null }) => {
       >
         <List className="h-4 w-4" />
       </ToolbarButton>
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+            <CaseSensitive className="h-4 w-4" />
+            Font Size
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {FONT_SIZES.map((size) => (
+            <DropdownMenuItem
+              key={size}
+              onClick={() => editor.chain().focus().setFontSize(size).run()}
+            >
+              {size}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem onClick={() => editor.chain().focus().unsetFontSize().run()}>
+            Reset
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="mx-1 h-5 w-px bg-border" />
 

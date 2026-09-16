@@ -2,14 +2,14 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import type { JSONContent } from "@tiptap/react";
 import TitleHeader from "@/components/layout/TitleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import ContractRichTextEditor from "@/components/contract/ContractRichTextEditor";
-import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
-import { DEFAULT_CONTRACT_LAYOUT, type ContractLayout } from "@/components/contract/LetterheadCanvas";
+import ContractPagesEditor, {
+  createEmptyPage,
+  type ContractPageData,
+} from "@/components/contract/ContractPagesEditor";
 import {
   useCreateContract,
   useGetContractTemplateById,
@@ -21,8 +21,6 @@ interface TContractMetaForm {
   companyName: string;
 }
 
-const EMPTY_CONTENT: JSONContent = { type: "doc", content: [{ type: "paragraph" }] };
-
 const CreateTemplate = () => {
   const params = useParams<{ id?: string }>();
   const navigate = useNavigate();
@@ -30,8 +28,7 @@ const CreateTemplate = () => {
   const returnTo = searchParams.get("returnTo");
   const isEdit = !!params.id;
 
-  const [content, setContent] = useState<JSONContent>(EMPTY_CONTENT);
-  const [layout, setLayout] = useState<ContractLayout>(DEFAULT_CONTRACT_LAYOUT);
+  const [pages, setPages] = useState<ContractPageData[]>([createEmptyPage()]);
 
   const {
     register,
@@ -50,8 +47,9 @@ const CreateTemplate = () => {
   useEffect(() => {
     if (isEdit && contractData) {
       reset({ title: contractData.title, companyName: contractData.companyName });
-      setContent(contractData.content || EMPTY_CONTENT);
-      setLayout(contractData.layout || DEFAULT_CONTRACT_LAYOUT);
+      setPages(
+        contractData.pages?.length ? contractData.pages : [createEmptyPage()]
+      );
     }
   }, [isEdit, contractData, reset]);
 
@@ -59,12 +57,12 @@ const CreateTemplate = () => {
     if (isPending || isUpdating) return;
 
     if (isEdit) {
-      updateTemplate({ ...data, content, layout, _id: params.id! });
+      updateTemplate({ ...data, pages, _id: params.id! });
       return;
     }
 
     createTemplate(
-      { ...data, content, layout },
+      { ...data, pages },
       {
         onSuccess: () => {
           if (returnTo) {
@@ -72,8 +70,7 @@ const CreateTemplate = () => {
             return;
           }
           reset();
-          setContent(EMPTY_CONTENT);
-          setLayout(DEFAULT_CONTRACT_LAYOUT);
+          setPages([createEmptyPage()]);
         },
       }
     );
@@ -83,11 +80,11 @@ const CreateTemplate = () => {
     <main className="p-6 space-y-6">
       <TitleHeader
         title={isEdit ? "Edit Contract Template" : "Create New Contract Template"}
-        description="Author the contract content and position it on the letterhead"
+        description="Author the contract content across one or more letterhead pages"
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <Card className="p-6 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Card className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium text-foreground">
@@ -117,31 +114,22 @@ const CreateTemplate = () => {
               )}
             </div>
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Contract Content</label>
-            <ContractRichTextEditor content={content} onChange={setContent} />
-            <p className="text-xs text-muted-foreground">
-              Drag the dashed box in the preview to position and resize the content on the letterhead.
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-4 pt-2 border-t">
-            <Button type="submit" disabled={isPending || isUpdating} className="min-w-[120px]">
-              {isEdit ? "Update Contract" : "Create Contract"}
-              {(isPending || isUpdating) && <LoaderCircle className="h-4 w-4 ml-2 animate-spin" />}
-            </Button>
-          </div>
         </Card>
 
-        <div className="lg:sticky lg:top-6">
-          <ContractDocumentPreview
-            content={content}
-            layout={layout}
-            editableLayout
-            onLayoutChange={setLayout}
-            mode="template"
-          />
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Contract Content</label>
+          <p className="text-xs text-muted-foreground">
+            Drag the dashed box in each page's preview to position and resize the content on the
+            letterhead. Use "Add Page" for a multi-page contract.
+          </p>
+          <ContractPagesEditor pages={pages} onChange={setPages} />
+        </div>
+
+        <div className="flex justify-end gap-4 pt-2 border-t">
+          <Button type="submit" disabled={isPending || isUpdating} className="min-w-[120px]">
+            {isEdit ? "Update Contract" : "Create Contract"}
+            {(isPending || isUpdating) && <LoaderCircle className="h-4 w-4 ml-2 animate-spin" />}
+          </Button>
         </div>
       </form>
     </main>

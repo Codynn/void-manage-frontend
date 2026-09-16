@@ -41,6 +41,8 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Departments", href: "/admin/departments", icon: Building2 },
+      { label: "Leave Policies", href: "/admin/leave-policies", icon: CalendarDays },
+      { label: "Role Templates", href: "/admin/role-templates", icon: ClipboardCheck },
     ],
   },
   {

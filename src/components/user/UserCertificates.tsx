@@ -136,6 +136,10 @@ export const UserCertificates = ({ userData, currentUserRole }: UserCertificates
               values={{
                 username: userData.username,
                 userEmail: userData.email,
+                department:
+                  typeof userData.department === "string"
+                    ? undefined
+                    : userData.department?.name,
                 ...previewCertificate.placeholderValues,
               }}
             />

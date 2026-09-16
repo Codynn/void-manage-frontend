@@ -15,14 +15,16 @@ import { useGetUserData } from "@/services/api/user.api";
 import { FileText, CheckCircle, Clock, Download, Image as ImageIcon, Pen, XCircle } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
-import { exportNodeAsPdf, exportNodeAsPng } from "@/lib/exportContract";
+import ContractPagesPreview, {
+  type ContractPagesPreviewHandle,
+} from "@/components/contract/ContractPagesPreview";
+import { exportNodesAsPdf, exportNodesAsPng } from "@/lib/exportContract";
 
 const InternContractPage = () => {
   const [pendingSignature, setPendingSignature] = useState<File | null>(null);
   const [isSigningContract, setIsSigningContract] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<ContractPagesPreviewHandle>(null);
 
   //   API CALLS
   const { data: assignedContractData } = useGetAssignedContract();
@@ -44,6 +46,10 @@ const InternContractPage = () => {
   const placeholderValues = {
     username: profileData?.username,
     userEmail: profileData?.email,
+    department:
+      typeof profileData?.department === "string"
+        ? undefined
+        : profileData?.department?.name,
     ...contractInstance?.placeholderValues,
     // Once rejected, the old signature is cleared from view until a new one is attached
     signatureImage: canSign ? pendingSignaturePreviewUrl : contractInstance?.signatureFileUrl?.url,
@@ -86,13 +92,14 @@ const InternContractPage = () => {
   };
 
   const handleDownload = async (type: "pdf" | "png") => {
-    if (!previewRef.current) return;
+    const nodes = previewRef.current?.getPageNodes();
+    if (!nodes?.length) return;
     const filename = `${contractTemplate?.title || "contract"}.${type}`;
     try {
       if (type === "pdf") {
-        await exportNodeAsPdf(previewRef.current, filename);
+        await exportNodesAsPdf(nodes, filename);
       } else {
-        await exportNodeAsPng(previewRef.current, filename);
+        await exportNodesAsPng(nodes, filename);
       }
     } catch (error) {
       console.error(error);
@@ -199,10 +206,9 @@ const InternContractPage = () => {
         </CardHeader>
         <CardContent onContextMenu={(e) => !isApproved && e.preventDefault()}>
           <div className={!isApproved && contractStatus !== "pending" ? "select-none" : undefined}>
-            <ContractDocumentPreview
+            <ContractPagesPreview
               ref={previewRef}
-              content={contractInstance?.contentOverride ?? contractTemplate?.content ?? null}
-              layout={contractInstance?.layoutOverride ?? contractTemplate?.layout}
+              pages={contractInstance?.pagesOverride ?? contractTemplate?.pages ?? []}
               mode="fill"
               values={placeholderValues}
               watermark={!isApproved && contractStatus !== "pending"}

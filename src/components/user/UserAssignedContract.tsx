@@ -1,5 +1,4 @@
-import { useState } from "react";
-import type { JSONContent } from "@tiptap/react";
+import { useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,7 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Clock, CheckCircle, Plus, Eye, ShieldCheck, XCircle, Pencil } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  CheckCircle,
+  Plus,
+  Eye,
+  ShieldCheck,
+  XCircle,
+  Pencil,
+  Download,
+  Image as ImageIcon,
+} from "lucide-react";
+import toast from "react-hot-toast";
 import type { IUserData } from "@/types/user.type";
 import { AssignContractDialog } from "./AssignContractDialog";
 import {
@@ -20,8 +31,14 @@ import {
   useRejectContract,
   useUpdateContractInstanceContent,
 } from "@/services/api/contract.api";
-import ContractDocumentPreview from "@/components/contract/ContractDocumentPreview";
-import ContractRichTextEditor from "@/components/contract/ContractRichTextEditor";
+import ContractPagesPreview, {
+  type ContractPagesPreviewHandle,
+} from "@/components/contract/ContractPagesPreview";
+import ContractPagesEditor, {
+  createEmptyPage,
+  type ContractPageData,
+} from "@/components/contract/ContractPagesEditor";
+import { exportNodesAsPdf, exportNodesAsPng } from "@/lib/exportContract";
 
 interface UserAssignedContractProps {
   userData: IUserData;
@@ -37,7 +54,8 @@ export const UserAssignedContract = ({
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectMessage, setRejectMessage] = useState("");
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editContent, setEditContent] = useState<JSONContent | null>(null);
+  const [editPages, setEditPages] = useState<ContractPageData[]>([]);
+  const previewRef = useRef<ContractPagesPreviewHandle>(null);
 
   // Fetch this user's assigned contract
   const { data: assignedContractData } = useGetAssignedContractsByUserId(userData._id);
@@ -51,18 +69,36 @@ export const UserAssignedContract = ({
     currentUserRole === "ADMIN" &&
     (assignedContract?.status === "pending" || assignedContract?.status === "rejected");
 
+  const pages = assignedContract?.pagesOverride ?? assignedContract?.model?.pages ?? [];
+
   const openEditDialog = () => {
     if (!assignedContract) return;
-    setEditContent(assignedContract.contentOverride ?? assignedContract.model?.content ?? null);
+    setEditPages(pages.length ? pages : [createEmptyPage()]);
     setShowEditDialog(true);
   };
 
   const handleSaveContent = () => {
-    if (!assignedContract || !editContent) return;
+    if (!assignedContract || !editPages.length) return;
     updateContent(
-      { instanceId: assignedContract._id, content: editContent },
+      { instanceId: assignedContract._id, pages: editPages },
       { onSuccess: () => setShowEditDialog(false) }
     );
+  };
+
+  const handleDownload = async (type: "pdf" | "png") => {
+    const nodes = previewRef.current?.getPageNodes();
+    if (!nodes?.length) return;
+    const filename = `${assignedContract?.model?.title || "contract"}.${type}`;
+    try {
+      if (type === "pdf") {
+        await exportNodesAsPdf(nodes, filename);
+      } else {
+        await exportNodesAsPng(nodes, filename);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate download. Please try again.");
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -255,16 +291,32 @@ export const UserAssignedContract = ({
         <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
           <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{assignedContract.model?.title}</DialogTitle>
+              <div className="flex items-center justify-between gap-4 pr-6">
+                <DialogTitle>{assignedContract.model?.title}</DialogTitle>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="gap-2" onClick={() => handleDownload("png")}>
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Image
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-2" onClick={() => handleDownload("pdf")}>
+                    <Download className="w-3.5 h-3.5" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
             </DialogHeader>
-            <ContractDocumentPreview
-              content={assignedContract.contentOverride ?? assignedContract.model?.content ?? null}
-              layout={assignedContract.layoutOverride ?? assignedContract.model?.layout}
+            <ContractPagesPreview
+              ref={previewRef}
+              pages={pages}
               mode="fill"
               watermark={assignedContract.status !== "approved"}
               values={{
                 username: userData.username,
                 userEmail: userData.email,
+                department:
+                  typeof userData.department === "string"
+                    ? undefined
+                    : userData.department?.name,
                 ...assignedContract.placeholderValues,
                 signatureImage: assignedContract.signatureFileUrl?.url,
                 signedAtDate: assignedContract.signedAt
@@ -311,7 +363,7 @@ export const UserAssignedContract = ({
 
       {assignedContract && (
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Contract Content - {userData.username}</DialogTitle>
             </DialogHeader>
@@ -319,8 +371,8 @@ export const UserAssignedContract = ({
               Changes only apply to this intern's contract, not the shared template. Only
               possible before they sign.
             </p>
-            {editContent && (
-              <ContractRichTextEditor content={editContent} onChange={setEditContent} />
+            {editPages.length > 0 && (
+              <ContractPagesEditor pages={editPages} onChange={setEditPages} />
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>

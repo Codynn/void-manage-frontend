@@ -79,6 +79,9 @@ export const useCreateUser = () => {
       department?: string;
       designation?: string;
       displayOrder?: number;
+      contractTemplate?: string | null;
+      phaseTemplate?: string | null;
+      leavePolicy?: string | null;
     }) => {
       const response = await API.post("/users/createuser", userData);
       return response.data;

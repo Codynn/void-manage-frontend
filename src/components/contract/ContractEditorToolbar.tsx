@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bold, Italic, Heading2, List, ImagePlus, AtSign, CaseSensitive } from "lucide-react";
+import { Bold, Italic, Heading2, List, ImagePlus, AtSign, CaseSensitive, Rows3 } from "lucide-react";
 import { IMAGE_PLACEHOLDERS, MANUAL_PLACEHOLDERS } from "@/lib/contractPlaceholders";
 
 const FONT_SIZES = ["10px", "12px", "13px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
@@ -131,6 +131,17 @@ const ContractEditorToolbar = ({ editor }: { editor: Editor | null }) => {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 gap-1.5 text-xs"
+        onClick={() => editor.chain().focus().insertSignatureRow().run()}
+      >
+        <Rows3 className="h-3.5 w-3.5" />
+        Insert Signature Row
+      </Button>
 
       <span className="ml-auto text-xs text-muted-foreground">
         Type <kbd className="rounded border px-1">@</kbd> to insert a placeholder

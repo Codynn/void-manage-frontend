@@ -81,10 +81,14 @@ export const useGetAssignedContract = () => {
       const response = await API.get("/contracts/assigned");
       return response?.data?.data || {};
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false,
+    // This page reflects admin actions (assign/approve/reject/edit content)
+    // taken from a different session - refetchOnMount:false previously meant
+    // an intern who'd visited once would keep seeing that stale snapshot
+    // (sometimes an empty/incomplete one) forever within the same tab, even
+    // after the contract was fully assigned or approved.
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -173,6 +177,31 @@ export const useUpdateContractInstanceContent = () => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to update contract content");
+    },
+  });
+};
+
+export const useUpdateContractInstancePlaceholders = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      instanceId,
+      placeholderValues,
+    }: {
+      instanceId: string;
+      placeholderValues: Record<string, string>;
+    }) => {
+      const response = await API.patch(`/contracts/instance/${instanceId}/placeholders`, {
+        placeholderValues,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Placeholder values updated");
+      queryClient.invalidateQueries({ queryKey: ["assignedContract"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update placeholder values");
     },
   });
 };

@@ -3,6 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { useEffect } from "react";
 import { PlaceholderNode } from "./tiptap/placeholderNode";
 import { FontSize } from "./tiptap/fontSizeMark";
+import { SignatureRow } from "./tiptap/signatureRowNode";
 import ContractEditorToolbar from "./ContractEditorToolbar";
 import { ContractPlaceholderProvider } from "./ContractPlaceholderContext";
 
@@ -13,7 +14,7 @@ interface Props {
 
 const ContractRichTextEditor = ({ content, onChange }: Props) => {
   const editor = useEditor({
-    extensions: [StarterKit, PlaceholderNode, FontSize],
+    extensions: [StarterKit, PlaceholderNode, FontSize, SignatureRow],
     content: content || "",
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
     editorProps: {

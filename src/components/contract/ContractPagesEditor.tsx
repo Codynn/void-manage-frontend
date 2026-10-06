@@ -1,10 +1,12 @@
-import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { FileJson, Plus, Trash2 } from "lucide-react";
 import type { JSONContent } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ContractRichTextEditor from "./ContractRichTextEditor";
 import ContractDocumentPreview from "./ContractDocumentPreview";
 import { DEFAULT_CONTRACT_LAYOUT, type ContractLayout } from "./LetterheadCanvas";
+import BulkPasteJsonDialog from "./BulkPasteJsonDialog";
 
 export interface ContractPageData {
   content: JSONContent;
@@ -30,11 +32,31 @@ const ContractPagesEditor = ({ pages, onChange }: Props) => {
     onChange(pages.map((page, i) => (i === index ? { ...page, ...patch } : page)));
   };
 
+  const [showBulkPaste, setShowBulkPaste] = useState(false);
+
   const addPage = () => onChange([...pages, createEmptyPage()]);
+
+  const handleBulkImport = (imported: ContractPageData[], mode: "replace" | "append") => {
+    onChange(mode === "replace" ? imported : [...pages, ...imported]);
+  };
   const removePage = (index: number) => onChange(pages.filter((_, i) => i !== index));
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setShowBulkPaste(true)}>
+          <FileJson className="h-4 w-4" />
+          Bulk paste JSON
+        </Button>
+      </div>
+
+      <BulkPasteJsonDialog
+        open={showBulkPaste}
+        onOpenChange={setShowBulkPaste}
+        hasExistingPages={pages.some((p) => p.content?.content?.some((n: any) => n.type !== "paragraph" || n.content))}
+        onImport={handleBulkImport}
+      />
+
       {pages.map((page, index) => (
         <Card key={index} className="space-y-4 p-4">
           <div className="flex items-center justify-between">

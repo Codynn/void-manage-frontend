@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import API from "../axiosInstance";
 import { toast } from "react-hot-toast";
 
@@ -68,6 +68,60 @@ export const useGetCheckInHistory = (username: string, startDate?: string, endDa
     refetchOnReconnect: false,
     refetchOnMount: false,
     enabled: !!username,
+  });
+};
+
+export const useToggleFlagCheckIn = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      flagged,
+      reason,
+    }: {
+      sessionId: string;
+      flagged: boolean;
+      reason?: string;
+    }) => {
+      const response = await API.patch(`/checkins/${sessionId}/flag`, { flagged, reason });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(variables.flagged ? "Check-in flagged as invalid" : "Flag cleared");
+      queryClient.invalidateQueries({ queryKey: ["checkInHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["weeklyAttendance"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update flag");
+    },
+  });
+};
+
+export const useGetMaxCheckInHours = () => {
+  return useQuery({
+    queryKey: ["maxCheckInHours"],
+    queryFn: async () => {
+      const response = await API.get("/settings/max-checkin-hours");
+      return response.data?.value as number;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useSetMaxCheckInHours = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (value: number) => {
+      const response = await API.put("/settings/max-checkin-hours", { value });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Max check-in hours updated");
+      queryClient.invalidateQueries({ queryKey: ["maxCheckInHours"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update max check-in hours");
+    },
   });
 };
 

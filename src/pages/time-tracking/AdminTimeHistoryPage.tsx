@@ -24,6 +24,8 @@ import type { ITimeDataBase } from "@/types/time.type";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import PendingWorkingHoursRequests from "@/components/time-tracking/PendingWorkingHoursRequests";
+import CheckInEntryBadges from "@/components/time-tracking/CheckInEntryBadges";
+import FlagCheckInButton from "@/components/time-tracking/FlagCheckInButton";
 
 // Formats a Date as YYYY-MM-DD using its *local* calendar date, unlike
 // `.toISOString()` which converts to UTC first and can silently roll the
@@ -328,8 +330,8 @@ const AdminTimeHistoryPage = () => {
                     key={entry?._id}
                     className="flex items-center justify-between p-4 bg-muted rounded-lg"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-4">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-4">
                         <span className="text-foreground font-medium">
                           {new Date(entry?.checkInTime).toLocaleDateString()}
                         </span>
@@ -346,11 +348,15 @@ const AdminTimeHistoryPage = () => {
                             </Badge>
                           )}
                         </div>
+                        <CheckInEntryBadges entry={entry} />
                       </div>
+                      <FlagCheckInButton entry={entry} />
                     </div>
                     <div className="text-right">
                       {entry?.durationHours ? (
-                        <span className="text-foreground font-medium">
+                        <span
+                          className={`font-medium ${entry.flagged ? "text-muted-foreground line-through" : "text-foreground"}`}
+                        >
                           {formatDuration(entry?.durationHours)}
                         </span>
                       ) : (

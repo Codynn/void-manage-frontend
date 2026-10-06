@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useUpdatePersonalDetails } from "@/services/api/user.api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -118,6 +121,9 @@ export function ProfilePopup({ user }: ProfilePopupProps) {
               )}
             </div>
 
+            {/* Personal details used in contracts & certificates */}
+            <PersonalDetailsForm user={user} />
+
             {/* Theme Toggle */}
             {/* <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div className="space-y-0.5">
@@ -180,5 +186,43 @@ export function ProfilePopup({ user }: ProfilePopupProps) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function PersonalDetailsForm({ user }: { user: IUserData }) {
+  const [fullName, setFullName] = useState(user?.fullName || "");
+  const [address, setAddress] = useState(user?.address || "");
+  const { mutate: save, isPending } = useUpdatePersonalDetails();
+
+  useEffect(() => {
+    setFullName(user?.fullName || "");
+    setAddress(user?.address || "");
+  }, [user?.fullName, user?.address]);
+
+  const dirty = fullName !== (user?.fullName || "") || address !== (user?.address || "");
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border p-3">
+      <p className="text-sm font-medium text-foreground">Personal details</p>
+      <p className="text-xs text-muted-foreground">
+        Used to fill your name and address in contracts and certificates.
+      </p>
+      <div className="space-y-1">
+        <Label htmlFor="fullName" className="text-xs">Full name</Label>
+        <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={user?.username} />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="address" className="text-xs">Address</Label>
+        <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city, district" />
+      </div>
+      <Button
+        size="sm"
+        className="w-full"
+        disabled={!dirty || isPending}
+        onClick={() => save({ fullName, address })}
+      >
+        {isPending ? "Saving..." : "Save details"}
+      </Button>
+    </div>
   );
 }

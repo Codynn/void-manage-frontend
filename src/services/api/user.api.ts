@@ -262,3 +262,20 @@ export const useRemoveWelcomePhoto = () => {
     },
   });
 };
+
+export const useUpdatePersonalDetails = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { fullName?: string; address?: string }) => {
+      const response = await API.patch("/users/me/personal", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Personal details saved");
+      queryClient.invalidateQueries({ queryKey: ["userData"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to save personal details");
+    },
+  });
+};

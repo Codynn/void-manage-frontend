@@ -9,4 +9,10 @@ export interface ITimeDataBase {
   updatedAt: string; // ISO date string
   __v: number;
   durationHours: number; // in hours
+  autoClosed?: boolean;
+  autoCloseReason?: string;
+  flagged?: boolean;
+  flagReason?: string;
+  flaggedBy?: { _id: string; username?: string } | string;
+  flaggedAt?: string;
 }

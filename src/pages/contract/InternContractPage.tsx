@@ -1,3 +1,4 @@
+import { personalPlaceholderValues } from "@/lib/contractPlaceholders";
 import TitleHeader from "@/components/layout/TitleHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,7 @@ const InternContractPage = () => {
   const placeholderValues = {
     username: profileData?.username,
     userEmail: profileData?.email,
+    ...personalPlaceholderValues(profileData),
     department:
       typeof profileData?.department === "string"
         ? undefined

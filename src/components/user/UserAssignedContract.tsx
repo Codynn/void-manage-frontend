@@ -1,3 +1,4 @@
+import { personalPlaceholderValues } from "@/lib/contractPlaceholders";
 import { useRef, useState } from "react";
 import {
   Card,
@@ -417,6 +418,7 @@ export const UserAssignedContract = ({
               values={{
                 username: userData.username,
                 userEmail: userData.email,
+                ...personalPlaceholderValues(userData),
                 department:
                   typeof userData.department === "string"
                     ? undefined

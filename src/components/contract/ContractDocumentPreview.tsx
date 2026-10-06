@@ -4,6 +4,8 @@ import StarterKit from "@tiptap/starter-kit";
 import { PlaceholderNode } from "./tiptap/placeholderNode";
 import { FontSize } from "./tiptap/fontSizeMark";
 import { SignatureRow } from "./tiptap/signatureRowNode";
+import { TextAlign } from "./tiptap/textAlign";
+import { CONTRACT_CONTENT_CLASS } from "@/lib/contractEditorStyles";
 import LetterheadCanvas, {
   DEFAULT_CONTRACT_LAYOUT,
   type ContractLayout,
@@ -42,7 +44,7 @@ const ContractDocumentPreview = forwardRef<HTMLDivElement, Props>(
     ref
   ) => {
     const editor = useEditor({
-      extensions: [StarterKit, PlaceholderNode, FontSize, SignatureRow],
+      extensions: [StarterKit, PlaceholderNode, FontSize, SignatureRow, TextAlign],
       content: content || "",
       editable: false,
     });
@@ -62,7 +64,7 @@ const ContractDocumentPreview = forwardRef<HTMLDivElement, Props>(
         watermark={watermark}
       >
         <ContractPlaceholderProvider value={{ mode, values, onImageSelect }}>
-          <div className="prose prose-sm max-w-none p-4 text-[13px] [&_p]:my-1.5">
+          <div className={`p-4 text-[13px] ${CONTRACT_CONTENT_CLASS}`}>
             <EditorContent editor={editor} />
           </div>
         </ContractPlaceholderProvider>

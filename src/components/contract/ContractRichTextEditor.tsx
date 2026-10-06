@@ -4,8 +4,10 @@ import { useEffect } from "react";
 import { PlaceholderNode } from "./tiptap/placeholderNode";
 import { FontSize } from "./tiptap/fontSizeMark";
 import { SignatureRow } from "./tiptap/signatureRowNode";
+import { TextAlign } from "./tiptap/textAlign";
 import ContractEditorToolbar from "./ContractEditorToolbar";
 import { ContractPlaceholderProvider } from "./ContractPlaceholderContext";
+import { CONTRACT_CONTENT_CLASS } from "@/lib/contractEditorStyles";
 
 interface Props {
   content: JSONContent | null;
@@ -14,13 +16,13 @@ interface Props {
 
 const ContractRichTextEditor = ({ content, onChange }: Props) => {
   const editor = useEditor({
-    extensions: [StarterKit, PlaceholderNode, FontSize, SignatureRow],
+    extensions: [StarterKit, PlaceholderNode, FontSize, SignatureRow, TextAlign],
     content: content || "",
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none min-h-[400px] p-4 focus:outline-none [&_p]:my-2",
+          `min-h-[400px] p-4 focus:outline-none ${CONTRACT_CONTENT_CLASS}`,
       },
     },
   });

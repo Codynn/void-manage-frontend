@@ -1,3 +1,4 @@
+import { personalPlaceholderValues } from "@/lib/contractPlaceholders";
 import { useState } from "react";
 import {
   Card,
@@ -136,6 +137,7 @@ export const UserCertificates = ({ userData, currentUserRole }: UserCertificates
               values={{
                 username: userData.username,
                 userEmail: userData.email,
+                ...personalPlaceholderValues(userData),
                 department:
                   typeof userData.department === "string"
                     ? undefined

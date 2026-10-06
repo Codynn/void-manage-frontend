@@ -6,8 +6,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bold, Italic, Heading2, List, ImagePlus, AtSign, CaseSensitive, Rows3 } from "lucide-react";
-import { IMAGE_PLACEHOLDERS, MANUAL_PLACEHOLDERS } from "@/lib/contractPlaceholders";
+import { Bold, Italic, Heading2, List, ImagePlus, AtSign, CaseSensitive, Rows3, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { CONTRACT_PLACEHOLDERS, IMAGE_PLACEHOLDERS } from "@/lib/contractPlaceholders";
 
 const FONT_SIZES = ["10px", "12px", "13px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
 
@@ -70,6 +70,30 @@ const ContractEditorToolbar = ({ editor }: { editor: Editor | null }) => {
 
       <div className="mx-1 h-5 w-px bg-border" />
 
+      <ToolbarButton
+        title="Align left"
+        active={editor.isActive({ textAlign: "left" })}
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+      >
+        <AlignLeft className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        title="Align center"
+        active={editor.isActive({ textAlign: "center" })}
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+      >
+        <AlignCenter className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        title="Align right"
+        active={editor.isActive({ textAlign: "right" })}
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+      >
+        <AlignRight className="h-4 w-4" />
+      </ToolbarButton>
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
@@ -102,7 +126,7 @@ const ContractEditorToolbar = ({ editor }: { editor: Editor | null }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          {MANUAL_PLACEHOLDERS.filter((p) => p.kind !== "image").map((p) => (
+          {CONTRACT_PLACEHOLDERS.filter((p) => p.kind !== "image").map((p) => (
             <DropdownMenuItem
               key={p.key}
               onClick={() => editor.chain().focus().insertPlaceholder(p.key).run()}

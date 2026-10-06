@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserCardsView from "@/components/time-tracking/UserCardsView";
 import DateTableView from "@/components/time-tracking/DateTableView";
 import TimelineGraphView from "@/components/time-tracking/TimelineGraphView";
+import MaxCheckInHoursSetting from "@/components/time-tracking/MaxCheckInHoursSetting";
 
 const AdminTimesheetPage = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -10,13 +11,14 @@ const AdminTimesheetPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Admin Timesheets</h1>
           <p className="text-muted-foreground mt-1">
             Actual attendance and pre-set weekly schedules for all users
           </p>
         </div>
+        <MaxCheckInHoursSetting />
       </div>
 
       {/* Tabs */}

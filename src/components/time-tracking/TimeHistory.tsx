@@ -20,6 +20,7 @@ import {
 import { DatePicker } from "../ui/date-picker";
 import type { ITimeDataBase } from "@/types/time.type";
 import { Skeleton } from "../ui/skeleton";
+import CheckInEntryBadges from "./CheckInEntryBadges";
 
 const formatDuration = (hoursInput: number) => {
   const hours = Math.floor(hoursInput);
@@ -262,11 +263,14 @@ const TimeHistory = () => {
                         </Badge>
                       )}
                     </div>
+                    <CheckInEntryBadges entry={entry} />
                   </div>
                 </div>
                 <div className="text-right">
                   {entry?.checkOutTime ? (
-                    <span className="text-gray-800 font-medium">
+                    <span
+                      className={`font-medium ${entry.flagged ? "text-gray-400 line-through" : "text-gray-800"}`}
+                    >
                       {formatDuration(entry?.durationHours || 0)}
                     </span>
                   ) : (

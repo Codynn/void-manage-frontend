@@ -12,6 +12,8 @@ export const CONTRACT_PLACEHOLDERS: PlaceholderDef[] = [
   { key: "username", label: "Username", kind: "text", auto: true },
   { key: "userEmail", label: "User Email", kind: "text", auto: true },
   { key: "department", label: "Department", kind: "text", auto: true },
+  { key: "userFullName", label: "Full Name", kind: "text", auto: true },
+  { key: "userAddress", label: "Address", kind: "text", auto: true },
   { key: "startDate", label: "Start Date", kind: "date", auto: false },
   { key: "endDate", label: "End Date", kind: "date", auto: false },
   { key: "signatureImage", label: "Signature Image", kind: "image", auto: true },
@@ -23,6 +25,17 @@ export const CONTRACT_PLACEHOLDERS: PlaceholderDef[] = [
   { key: "jobTitle", label: "Job Title", kind: "text", auto: false },
   { key: "mentorName", label: "Mentor Name", kind: "text", auto: false },
 ];
+
+// Personal details the user maintains on their own profile. Full name falls
+// back to the login username until the user sets one.
+export const personalPlaceholderValues = (user?: {
+  username?: string;
+  fullName?: string;
+  address?: string;
+} | null): Record<string, string | undefined> => ({
+  userFullName: user?.fullName || user?.username,
+  userAddress: user?.address || undefined,
+});
 
 export const getPlaceholderDef = (key: string): PlaceholderDef | undefined =>
   CONTRACT_PLACEHOLDERS.find((p) => p.key === key);

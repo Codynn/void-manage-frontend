@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   Building2,
   GraduationCap,
+  DoorOpen,
 } from "lucide-react";
 
 export interface NavItem {
@@ -58,6 +59,7 @@ export const ADMIN_NAV: NavGroup[] = [
       },
       { label: "Leave Requests", href: "/admin/leave", icon: CalendarDays },
       { label: "Marks", href: "/admin/marks", icon: GraduationCap },
+      { label: "Spaces", href: "/admin/spaces", icon: DoorOpen },
     ],
   },
   {
@@ -86,6 +88,7 @@ export const MENTOR_NAV: NavGroup[] = [
       { label: "Individual Assignment", href: "/mentor/individual-assignment", icon: UserCog },
       { label: "Marks", href: "/mentor/marks", icon: GraduationCap },
       { label: "Leave Requests", href: "/mentor/leave", icon: CalendarDays },
+      { label: "Spaces", href: "/mentor/spaces", icon: DoorOpen },
     ],
   },
   {
@@ -108,6 +111,7 @@ export const INTERN_NAV: NavGroup[] = [
       { label: "Time Tracking", href: "/intern/time-tracking", icon: Clock },
       { label: "Milestones", href: "/intern/milestones", icon: Flag },
       { label: "Leave Requests", href: "/intern/leave", icon: CalendarDays },
+      { label: "Spaces", href: "/intern/spaces", icon: DoorOpen },
     ],
   },
   {

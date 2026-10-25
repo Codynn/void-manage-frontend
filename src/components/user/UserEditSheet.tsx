@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { useUpdateUser } from "@/services/api/user.api";
+import { useGetSpaces } from "@/services/api/space.api";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "../ui/input";
 import {
@@ -24,7 +25,9 @@ import {
 } from "../ui/select";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
-import { Trash2, Plus, Calendar, User, Mail, Shield } from "lucide-react";
+import { Trash2, Plus, Calendar, User, Mail, Shield, DoorOpen } from "lucide-react";
+
+const NONE_SPACE = "__none__";
 
 interface UserEditSheetProps {
   children: React.ReactNode;
@@ -34,6 +37,7 @@ interface UserEditSheetProps {
 const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
   const [open, setOpen] = useState(false);
   const { mutate: updateUser, isPending } = useUpdateUser();
+  const { data: spaces } = useGetSpaces("active");
 
   //   Only partial IUserData is needed for updates
   const {
@@ -60,11 +64,14 @@ const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
   const onSubmit = (data: Partial<IUserData>) => {
     if (isPending) return;
 
+    const defaultSpaceValue = watch("defaultSpace") as unknown as string | undefined;
+
     updateUser(
       {
         ...user,
         ...data,
-      },
+        defaultSpace: defaultSpaceValue === NONE_SPACE ? null : defaultSpaceValue,
+      } as Partial<IUserData>,
       {
         onSuccess: () => setOpen(false),
       }
@@ -196,6 +203,37 @@ const UserEditSheet = ({ children, user }: UserEditSheetProps) => {
                     <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <DoorOpen className="h-3 w-3 text-black" />
+                  Default Space
+                </Label>
+                <Select
+                  value={watch("defaultSpace") as unknown as string}
+                  defaultValue={
+                    (typeof user.defaultSpace === "object" ? user.defaultSpace?._id : user.defaultSpace) ||
+                    NONE_SPACE
+                  }
+                  onValueChange={(value) => setValue("defaultSpace" as any, value as any)}
+                >
+                  <SelectTrigger className="mt-1 border-gray-300 focus:border-black focus:ring-black">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE_SPACE}>None</SelectItem>
+                    {spaces?.map((s) => (
+                      <SelectItem key={s._id} value={s._id}>
+                        {s.name}
+                        {s.location ? ` - ${s.location}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Auto-allocated to this user whenever they check in, if available.
+                </p>
               </div>
             </div>
 

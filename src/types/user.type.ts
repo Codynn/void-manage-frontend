@@ -32,6 +32,7 @@ export interface IUserData {
   archived?: boolean;
   mustChangePassword?: boolean;
   department?: { _id: string; name: string } | string | null;
+  defaultSpace?: { _id: string; name: string; location?: string } | string | null;
   fullName?: string;
   address?: string;
 }

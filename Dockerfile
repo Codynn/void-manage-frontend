@@ -1,11 +1,11 @@
 # -------- deps --------
-FROM node:20-alpine AS deps
+FROM node:22.23.4-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm i --legacy-peer-deps
 
 # -------- build --------
-FROM node:20-alpine AS builder
+FROM node:22.23.4-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -16,7 +16,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # -------- runner --------
-FROM node:20-alpine AS runner
+FROM node:22.23.4-alpine AS runner
 WORKDIR /app
 
 COPY --from=builder /app/package.json ./package.json

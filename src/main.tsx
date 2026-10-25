@@ -43,6 +43,9 @@ import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
 import InternCertificatesPage from "./pages/certificate/InternCertificatesPage.tsx";
 import TemplatesPage from "./pages/templates/TemplatesPage.tsx";
+import AdminSpacesPage from "./pages/space/AdminSpacesPage.tsx";
+import MentorSpacesPage from "./pages/space/MentorSpacesPage.tsx";
+import InternSpacesPage from "./pages/space/InternSpacesPage.tsx";
 import LeavePoliciesPage from "./pages/leave/LeavePoliciesPage.tsx";
 
 const router = createBrowserRouter([
@@ -171,6 +174,10 @@ const router = createBrowserRouter([
             element: <MarksPage />,
           },
           {
+            path: "spaces",
+            element: <AdminSpacesPage />,
+          },
+          {
             path: "milestones",
             children: [
               {
@@ -266,6 +273,10 @@ const router = createBrowserRouter([
             path: "milestones",
             element: <InternMileStone />,
           },
+          {
+            path: "spaces",
+            element: <InternSpacesPage />,
+          },
         ],
       },
       {
@@ -307,6 +318,10 @@ const router = createBrowserRouter([
           {
             path: "marks",
             element: <MarksPage />,
+          },
+          {
+            path: "spaces",
+            element: <MentorSpacesPage />,
           },
         ],
       },

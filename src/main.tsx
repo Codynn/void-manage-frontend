@@ -43,9 +43,7 @@ import AdminDocumentsPage from "./pages/documents/AdminDocumentsPage.tsx";
 import CreateCertificateTemplate from "./pages/certificate/CreateCertificateTemplate.tsx";
 import InternCertificatesPage from "./pages/certificate/InternCertificatesPage.tsx";
 import TemplatesPage from "./pages/templates/TemplatesPage.tsx";
-import AdminSpacesPage from "./pages/space/AdminSpacesPage.tsx";
-import MentorSpacesPage from "./pages/space/MentorSpacesPage.tsx";
-import InternSpacesPage from "./pages/space/InternSpacesPage.tsx";
+import SpaceCalendarPage from "./pages/space/SpaceCalendarPage.tsx";
 import LeavePoliciesPage from "./pages/leave/LeavePoliciesPage.tsx";
 
 const router = createBrowserRouter([
@@ -175,7 +173,7 @@ const router = createBrowserRouter([
           },
           {
             path: "spaces",
-            element: <AdminSpacesPage />,
+            element: <SpaceCalendarPage />,
           },
           {
             path: "milestones",
@@ -275,7 +273,7 @@ const router = createBrowserRouter([
           },
           {
             path: "spaces",
-            element: <InternSpacesPage />,
+            element: <SpaceCalendarPage />,
           },
         ],
       },
@@ -321,7 +319,7 @@ const router = createBrowserRouter([
           },
           {
             path: "spaces",
-            element: <MentorSpacesPage />,
+            element: <SpaceCalendarPage />,
           },
         ],
       },

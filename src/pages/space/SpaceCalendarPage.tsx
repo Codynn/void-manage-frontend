@@ -287,17 +287,21 @@ const SpaceCard = ({ space, date, currentUserId, isAdmin }: SpaceCardProps) => {
                       onClick={() => handleBlockClick(block)}
                       className="h-7 px-2 text-[11px] text-white text-left truncate hover:ring-2 hover:ring-foreground/30 transition"
                       style={{ background: bg, opacity: mine ? 1 : 0.92 }}
+                      title={
+                        block.source === "allocation"
+                          ? `${block.title} · ${block.bookedBy?.username || "Unknown"}`
+                          : `${block.title}${block.batch ? ` · ${block.batch}` : ""} (weekly)`
+                      }
                     >
-                      {slot.busyLabel ? (
-                        <span className="font-medium">
-                          {block.title}
-                          {block.source === "allocation" && block.bookedBy
-                            ? ` · ${block.bookedBy.username}`
-                            : block.source === "routine"
-                              ? " · weekly"
-                              : ""}
-                        </span>
-                      ) : null}
+                      <span className="font-medium">
+                        {block.source === "allocation"
+                          ? block.bookedBy?.username || "Booked"
+                          : block.title}
+                        {block.source === "allocation" && slot.busyLabel && block.title
+                          ? ` · ${block.title}`
+                          : ""}
+                        {block.source === "routine" && slot.busyLabel ? " · weekly" : ""}
+                      </span>
                     </button>
                   ) : (
                     <div

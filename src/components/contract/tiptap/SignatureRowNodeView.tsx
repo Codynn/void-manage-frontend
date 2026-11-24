@@ -25,6 +25,7 @@ const SignatureRowNodeView = ({ node, updateAttributes, editor }: NodeViewProps)
   const { mutateAsync: uploadFile } = useUploadFile();
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fillInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const fixedInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const setColumns = (next: SignatureColumn[]) => updateAttributes({ columns: next });
   const updateColumn = (index: number, patch: Partial<SignatureColumn>) =>
@@ -95,25 +96,45 @@ const SignatureRowNodeView = ({ node, updateAttributes, editor }: NodeViewProps)
               </div>
 
               {col.mode === "fixed" ? (
-                <div className="flex h-14 items-center justify-center rounded border border-dashed bg-muted/40">
+                <>
                   {col.imageUrl ? (
-                    <img src={col.imageUrl} alt="" className="h-full object-contain" />
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        fixedInputRefs.current[index]?.click();
+                      }}
+                      className="flex h-14 w-full items-center justify-center rounded border border-dashed bg-muted/40 hover:border-primary"
+                    >
+                      <img src={col.imageUrl} alt="" className="h-full object-contain" />
+                    </button>
                   ) : (
-                    <label className="flex cursor-pointer flex-col items-center gap-0.5 text-[10px] text-muted-foreground hover:text-primary">
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        fixedInputRefs.current[index]?.click();
+                      }}
+                      className="flex h-14 w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded border border-dashed bg-muted/40 text-[10px] text-muted-foreground hover:border-primary hover:text-primary"
+                    >
                       <Upload className="h-3.5 w-3.5" />
                       {uploadingIndex === index ? "Uploading..." : "Upload signature"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFixedImageUpload(index, file);
-                        }}
-                      />
-                    </label>
+                    </button>
                   )}
-                </div>
+                  <input
+                    ref={(el) => {
+                      fixedInputRefs.current[index] = el;
+                    }}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFixedImageUpload(index, file);
+                      e.target.value = "";
+                    }}
+                  />
+                </>
               ) : (
                 <div className="flex h-14 items-center justify-center rounded border border-dashed bg-muted/40 text-[10px] text-muted-foreground">
                   <ImageIcon className="mr-1 h-3.5 w-3.5" />
